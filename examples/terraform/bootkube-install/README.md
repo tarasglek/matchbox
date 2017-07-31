@@ -1,21 +1,26 @@
 # Self-hosted Kubernetes
 
-The self-hosted Kubernetes example shows how to use matchbox to network boot and provision a 3 node "self-hosted" Kubernetes v1.7.1 cluster. [bootkube](https://github.com/kubernetes-incubator/bootkube) is run once on a controller node to bootstrap Kubernetes control plane components as pods before exiting.
+The self-hosted Kubernetes example shows how to use matchbox to network boot and provision a 3 node "self-hosted" Kubernetes v1.7.1 cluster on bare metal or kvm. [bootkube](https://github.com/kubernetes-incubator/bootkube) is run once on a controller node to bootstrap Kubernetes control plane components as pods before exiting.
 
 ## Requirements
 
 Follow the getting started [tutorial](../../../Documentation/getting-started.md) to learn about matchbox and set up an environment that meets the requirements:
 
 * Matchbox v0.6+ [installation](../../../Documentation/deployment.md) with gRPC API enabled
-* Matchbox provider credentials `client.crt`, `client.key`, and `ca.crt`
+* [Generate](../../../scripts/tls/README.md) matchbox provider credentials `client.crt`, `client.key`, and `ca.crt`. Copy these files to `examples/etc/matchbox/` and `~/.matchbox`
 * PXE [network boot](../../../Documentation/network-setup.md) environment
 * Terraform v0.9+ and [terraform-provider-matchbox](https://github.com/coreos/terraform-provider-matchbox) installed locally on your system
-* Machines with known DNS names and MAC addresses
+* Machines with known DNS names and MAC addresses. Add the following to `/etc/hosts`:
+
+        172.17.0.21 node1.example.com cluster.example.com
+        172.17.0.22 node2.example.com
+        172.17.0.23 node3.example.com
+        127.0.0.1 matchbox.example.com
 
 If you prefer to provision QEMU/KVM VMs on your local Linux machine, set up the matchbox [development environment](../../../Documentation/getting-started-rkt.md).
 
 ```sh
-sudo ./scripts/devnet create
+sudo CONTAINER_RUNTIME=docker ./scripts/devnet create
 ```
 
 ## Usage
