@@ -122,7 +122,7 @@ $ ipmitool -H node1.example.com -U USER -P PASS power on
 For local QEMU/KVM development, create the QEMU/KVM VMs.
 
 ```sh
-$ sudo ./scripts/libvirt create
+$ sudo ./scripts/libvirt create-docker
 $ sudo ./scripts/libvirt [start|reboot|shutdown|poweroff|destroy]
 ```
 
