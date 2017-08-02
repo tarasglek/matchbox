@@ -7,6 +7,9 @@ The self-hosted Kubernetes example shows how to use matchbox to network boot and
 Follow the getting started [tutorial](../../../Documentation/getting-started.md) to learn about matchbox and set up an environment that meets the requirements:
 
 * Matchbox v0.6+ [installation](../../../Documentation/deployment.md) with gRPC API enabled
+* Coreos release:
+
+        ./scripts/get-coreos stable 1409.7.0
 * [Generate](../../../scripts/tls/README.md) matchbox provider credentials `client.crt`, `client.key`, and `ca.crt`. Copy these files to `examples/etc/matchbox/` and `~/.matchbox`
 * PXE [network boot](../../../Documentation/network-setup.md) environment
 * Terraform v0.9+ and [terraform-provider-matchbox](https://github.com/coreos/terraform-provider-matchbox) installed locally on your system
