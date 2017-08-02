@@ -60,9 +60,9 @@ $ sudo -E ./scripts/devnet status
 
 Take a look at the [etcd3 groups](../examples/groups/etcd3) to get an idea of how machines are mapped to Profiles. Explore some endpoints exposed by the service, say for QEMU/KVM node1.
 
-* iPXE [http://127.0.0.1:8080/ipxe?mac=52:54:00:a1:9c:ae](http://127.0.0.1:8080/ipxe?mac=52:54:00:a1:9c:ae)
-* Ignition [http://127.0.0.1:8080/ignition?mac=52:54:00:a1:9c:ae](http://127.0.0.1:8080/ignition?mac=52:54:00:a1:9c:ae)
-* Metadata [http://127.0.0.1:8080/metadata?mac=52:54:00:a1:9c:ae](http://127.0.0.1:8080/metadata?mac=52:54:00:a1:9c:ae)
+* iPXE [http://127.0.0.1:8080/ipxe?mac=52:54:00:a1:9c:aa](http://127.0.0.1:8080/ipxe?mac=52:54:00:a1:9c:aa)
+* Ignition [http://127.0.0.1:8080/ignition?mac=52:54:00:a1:9c:aa](http://127.0.0.1:8080/ignition?mac=52:54:00:a1:9c:aa)
+* Metadata [http://127.0.0.1:8080/metadata?mac=52:54:00:a1:9c:aa](http://127.0.0.1:8080/metadata?mac=52:54:00:a1:9c:aa)
 
 ### Manual
 

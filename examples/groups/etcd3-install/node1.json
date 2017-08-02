@@ -3,7 +3,7 @@
   "name": "etcd Node 1",
   "profile": "etcd3",
   "selector": {
-    "mac": "52:54:00:a1:9c:ae",
+    "mac": "52:54:00:a1:9c:aa",
     "os": "installed"
   },
   "metadata": {

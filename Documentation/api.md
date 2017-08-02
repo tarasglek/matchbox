@@ -153,9 +153,9 @@ GET http://matchbox.foo/generic?label=value
 ```
 {
   “uuid”: “”,
-  “mac”: “52:54:00:a1:9c:ae”,
+  “mac”: “52:54:00:a1:9c:aa”,
   “osInstalled”: true,
-  “rawQuery”: “mac=52:54:00:a1:9c:ae&os=installed”
+  “rawQuery”: “mac=52:54:00:a1:9c:aa&os=installed”
 }
 ```
 
@@ -181,8 +181,8 @@ GET http://matchbox.foo/metadata?mac=52-54-00-a1-9c-ae&foo=bar&count=3&gate=true
 META=data
 ETCD_NAME=node1
 SOME_NESTED_DATA=some-value
-MAC=52:54:00:a1:9c:ae
-REQUEST_QUERY_MAC=52:54:00:a1:9c:ae
+MAC=52:54:00:a1:9c:aa
+REQUEST_QUERY_MAC=52:54:00:a1:9c:aa
 REQUEST_QUERY_FOO=bar
 REQUEST_QUERY_COUNT=3
 REQUEST_QUERY_GATE=true

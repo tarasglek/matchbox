@@ -51,7 +51,7 @@ Provide an ordered list of controller names, MAC addresses, and domain names. Pr
 
 ```hcl
 controller_names = ["node1"]
-controller_macs = ["52:54:00:a1:9c:ae"]
+controller_macs = ["52:54:00:a1:9c:aa"]
 controller_domains = ["node1.example.com"]
 worker_names = ["node2", "node3"]
 worker_macs = ["52:54:00:b2:2f:86", "52:54:00:c3:61:77"]

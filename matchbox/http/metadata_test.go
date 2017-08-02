@@ -17,7 +17,7 @@ import (
 func TestMetadataHandler(t *testing.T) {
 	group := &storagepb.Group{
 		Id:       "test-group",
-		Selector: map[string]string{"mac": "52:54:00:a1:9c:ae"},
+		Selector: map[string]string{"mac": "52:54:00:a1:9c:aa"},
 		Metadata: []byte(`{"meta":"data", "etcd":{"name":"node1"},"some":{"nested":{"data":"some-value"}}}`),
 	}
 	logger, _ := logtest.NewNullLogger()
@@ -38,9 +38,9 @@ func TestMetadataHandler(t *testing.T) {
 		"ETCD_NAME":        "node1",
 		"SOME_NESTED_DATA": "some-value",
 		// group selector
-		"MAC": "52:54:00:a1:9c:ae",
+		"MAC": "52:54:00:a1:9c:aa",
 		// request
-		"REQUEST_QUERY_MAC":   "52:54:00:a1:9c:ae",
+		"REQUEST_QUERY_MAC":   "52:54:00:a1:9c:aa",
 		"REQUEST_QUERY_FOO":   "bar",
 		"REQUEST_QUERY_COUNT": "3",
 		"REQUEST_QUERY_GATE":  "true",

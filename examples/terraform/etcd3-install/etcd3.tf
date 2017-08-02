@@ -27,7 +27,7 @@ resource "matchbox_group" "node1" {
   profile = "${module.profiles.etcd3}"
 
   selector {
-    mac = "52:54:00:a1:9c:ae"
+    mac = "52:54:00:a1:9c:aa"
     os  = "installed"
   }
 
