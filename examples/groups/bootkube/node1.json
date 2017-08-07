@@ -12,7 +12,7 @@
     "k8s_dns_service_ip": "10.3.0.10",
     "pxe": "true",
     "ssh_authorized_keys": [
-      "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDrh16eSSa8gieQlOcmkQZMTWyjdXXezph/MwsSypml62f8qDgEjXSNuFibr58JtWgODFkvj0G3yPVfUIjzdK1dt9oGNBpghX+HHtWMI5XaQz3Fl8dp/mUNL3Qy3wvbWuw4hhv8GnVyGe/y56nJrxcRT3wzXUcpI13NPGTZAhJ8nMXeZWfx3QFGui7dych4WQPmRpyUlbJeDUwzi4GJNSorSUl7Jnos4uYTxdShN6q1SVCKv9kI1tARLIP1422ic3dFWGIbw1p6eW3BBKN4crGSoDzdU1O9Ax6oXtfRZgGEQ6s3oFBzjPJkUUH9Yk//gKxJU9VkLxwtjg/Iv0U+ZmIp taras@taras-mbp"
+      "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDFEdmMBIiBUD6aOrSYmiRB4YNYvaHn0fKys+xDl8W2xcWqEitpidjAsYHAGLTN5BacLLwyOoj0JFe/4KazuHGCSV9apjAG/64PzxEww6xXqISG9A1/1CjcRKS0IZob7JOzpfhAwBBsbx9P/NIRzpeAzJeDikYIXqpA6TpmX2InCeh4XexuQMdTpDHKuLMN2lkBMkC2u4MTNpgVRGo4/reT5DQezIv0rH+kO6cV2ePzUUdrGHnLpuOA+pS4zWHOrcxsUREC02n/dFH3N6D92KZ0ZR1Xd1RobXAA74cQJb6Ab7Iu9MeeiZS4h5eyIb641FXt+33N6W8vt/zi+KBR9pZ7 taras@r66a-34"
     ]
   }
 }
