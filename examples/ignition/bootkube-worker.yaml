@@ -41,7 +41,9 @@ systemd:
           --volume var-log,kind=host,source=/var/log \
           --mount volume=var-log,target=/var/log \
           --volume iscsiadm,kind=host,source=/usr/sbin/iscsiadm \
-          --mount volume=iscsiadm,target=/usr/sbin/iscsiadm"
+          --mount volume=iscsiadm,target=/usr/sbin/iscsiadm \
+          --volume iscsietc,kind=host,source=/etc/iscsi \
+          --mount volume=iscsietc,target=/etc/iscsi"
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/manifests
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/cni/net.d
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/checkpoint-secrets
@@ -71,6 +73,17 @@ systemd:
         RestartSec=5
         [Install]
         WantedBy=multi-user.target
+    - name: multipathd.service
+      enable: true
+      contents: |
+        [Unit]
+        Description=Multipath service
+        Before=kubelet.service
+        [Service]
+        ExecStartPre=/sbin/modprobe dm-multipath
+        ExecStart=/usr/sbin/multipathd -d -s
+        [Install]
+        RequiredBy=kubelet.service
 
 storage:
   {{ if index . "pxe" }}

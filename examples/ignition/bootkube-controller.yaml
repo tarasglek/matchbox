@@ -50,6 +50,17 @@ systemd:
         ExecStart=/bin/sh -c 'while ! /usr/bin/grep '^[^#[:space:]]' /etc/resolv.conf > /dev/null; do sleep 1; done'
         [Install]
         RequiredBy=kubelet.service
+    - name: multipathd.service
+      enable: true
+      contents: |
+        [Unit]
+        Description=Multipath service
+        Before=kubelet.service
+        [Service]
+        ExecStartPre=/sbin/modprobe dm-multipath
+        ExecStart=/usr/sbin/multipathd -d -s
+        [Install]
+        RequiredBy=kubelet.service
     - name: kubelet.service
       contents: |
         [Unit]
@@ -64,7 +75,9 @@ systemd:
           --volume var-log,kind=host,source=/var/log \
           --mount volume=var-log,target=/var/log \
           --volume iscsiadm,kind=host,source=/usr/sbin/iscsiadm \
-          --mount volume=iscsiadm,target=/usr/sbin/iscsiadm"
+          --mount volume=iscsiadm,target=/usr/sbin/iscsiadm \
+          --volume iscsietc,kind=host,source=/etc/iscsi \
+          --mount volume=iscsietc,target=/etc/iscsi"
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/manifests
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/cni/net.d
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/checkpoint-secrets
