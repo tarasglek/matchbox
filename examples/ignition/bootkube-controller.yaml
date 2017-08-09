@@ -117,7 +117,7 @@ systemd:
         WorkingDirectory=/opt/bootkube
         ExecStart=/opt/bootkube/bootkube-start
 storage:
-  {{ if index . "pxe" }}
+# {{ if index . "pxe" }}
   disks:
     - device: /dev/sda
       wipe_table: true
@@ -132,7 +132,7 @@ storage:
           force: true
           options:
             - "-LROOT"
-  {{end}}
+# {{end}} 
   files:
     - path: /etc/kubernetes/kubelet.env
       filesystem: root
@@ -152,7 +152,7 @@ storage:
       mode: 0644
       contents:
         inline:
-          {{.domain_name}}
+          "{{.domain_name}}"
     - path: /etc/sysctl.d/max-user-watches.conf
       filesystem: root
       contents:
@@ -185,12 +185,12 @@ storage:
             --dns=host \
             --exec=/bootkube -- start --asset-dir=/assets "$@"
 
-{{ if index . "ssh_authorized_keys" }}
 passwd:
+#{{ if index . "ssh_authorized_keys" }} 
   users:
     - name: core
       ssh_authorized_keys:
-        {{ range $element := .ssh_authorized_keys }}
-        - {{$element}}
-        {{end}}
-{{end}}
+#         {{ range $element := .ssh_authorized_keys }} 
+        - "{{$element}}"
+#         {{end}} 
+#{{end}} 
