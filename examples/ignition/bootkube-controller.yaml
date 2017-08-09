@@ -24,6 +24,8 @@ systemd:
             Environment="ETCD_PEER_CERT_FILE=/etc/ssl/certs/etcd/peer.crt"
             Environment="ETCD_PEER_KEY_FILE=/etc/ssl/certs/etcd/peer.key"
             Environment="ETCD_PEER_CLIENT_CERT_AUTH=true"
+    - name: iscsid.service
+      enable: true
     - name: docker.service
       enable: true
     - name: locksmithd.service
@@ -108,6 +110,7 @@ systemd:
         RestartSec=10
         [Install]
         WantedBy=multi-user.target
+        Requires=iscsid.service
     - name: bootkube.service
       contents: |
         [Unit]
