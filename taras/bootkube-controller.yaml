@@ -11,7 +11,6 @@ systemd:
         Type=oneshot
         ExecStartPre=/usr/bin/chown -Rv etcd:etcd /etc/ssl/etcd
         ExecStartPre=/usr/bin/chmod -Rv 500 /etc/ssl/etcd/
-        ExecStartPre=/usr/bin/ln -sv /etc/ssl/etcd/etcd /etc/ssl/certs/etcd
         ExecStart=/usr/bin/sleep 0
         [Install]
         RequiredBy=etcd-member.service
