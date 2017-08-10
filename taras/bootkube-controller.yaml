@@ -1,6 +1,20 @@
 ---
 systemd:
   units:
+    - name: hacketcd.service
+      enable: true
+      contents: |
+        [Unit]
+        Description=fix etcd perms, symlink..dunno why
+        Before=etcd-member.service
+        [Service]
+        Type=oneshot
+        ExecStartPre=/usr/bin/chown -Rv etcd:etcd /etc/ssl/etcd
+        ExecStartPre=/usr/bin/chmod -Rv 500 /etc/ssl/etcd/
+        ExecStartPre=/usr/bin/ln -sv /etc/ssl/etcd/etcd /etc/ssl/certs/etcd
+        ExecStart=/usr/bin/sleep 0
+        [Install]
+        RequiredBy=etcd-member.service
     - name: etcd-member.service
       enable: true
       dropins:
@@ -109,7 +123,6 @@ systemd:
         Restart=always
         RestartSec=10
         [Install]
-        Requires=iscsid.service
         WantedBy=multi-user.target
     - name: bootkube.service
       enable: true
