@@ -20,7 +20,8 @@ systemd:
         - name: 40-etcd-cluster.conf
           contents: |
             [Service]
-            Environment="ETCD_IMAGE_TAG=v3.2.0"
+            Environment="ETCD_IMAGE_TAG="
+            Environment="ETCD_IMAGE=--insecure-options=image http://matchbox.foo:8080/assets/rkt/etcd.aci"
             Environment="ETCD_NAME={{.etcd_name}}"
             Environment="ETCD_ADVERTISE_CLIENT_URLS=https://{{.domain_name}}:2379"
             Environment="ETCD_INITIAL_ADVERTISE_PEER_URLS=https://{{.domain_name}}:2380"
@@ -92,7 +93,8 @@ systemd:
           --volume iscsiadm,kind=host,source=/usr/sbin/iscsiadm \
           --mount volume=iscsiadm,target=/usr/sbin/iscsiadm \
           --volume iscsietc,kind=host,source=/etc/iscsi \
-          --mount volume=iscsietc,target=/etc/iscsi"
+          --mount volume=iscsietc,target=/etc/iscsi \
+          --insecure-options=image"
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/manifests
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/cni/net.d
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/checkpoint-secrets
@@ -157,8 +159,7 @@ storage:
       mode: 0644
       contents:
         inline: |
-          KUBELET_IMAGE_URL=quay.io/coreos/hyperkube
-          KUBELET_IMAGE_TAG=v1.7.1_coreos.0
+          KUBELET_IMAGE=http://matchbox.foo:8080/assets/rkt/hyperkube.aci
     - path: /etc/ssl/etcd/.empty
       filesystem: root
       mode: 0644
@@ -188,8 +189,8 @@ storage:
           #!/bin/bash
           # Wrapper for bootkube start
           set -e
-          BOOTKUBE_ACI="${BOOTKUBE_ACI:-quay.io/coreos/bootkube}"
-          BOOTKUBE_VERSION="${BOOTKUBE_VERSION:-v0.6.0}"
+          BOOTKUBE_ACI="http://matchbox.foo:8080/assets/rkt/bootkube.aci"
+          BOOTKUBE_VERSION=""
           BOOTKUBE_ASSETS="${BOOTKUBE_ASSETS:-/opt/bootkube/assets}"
           exec /usr/bin/rkt run \
             --trust-keys-from-https \
@@ -197,8 +198,9 @@ storage:
             --mount volume=assets,target=/assets \
             --volume bootstrap,kind=host,source=/etc/kubernetes \
             --mount volume=bootstrap,target=/etc/kubernetes \
+            --insecure-options=image \
             $RKT_OPTS \
-            ${BOOTKUBE_ACI}:${BOOTKUBE_VERSION} \
+            ${BOOTKUBE_ACI} \
             --net=host \
             --dns=host \
             --exec=/bootkube -- start --asset-dir=/assets "$@"
