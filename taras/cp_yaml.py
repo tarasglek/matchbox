@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 import sys
 """
+bootkube render --asset-dir=assets --api-servers=https://fb-node1.example.com:443 --api-server-alt-names=DNS=fb-node1.example.com --etcd-servers=https://fb-node1.example.com:2379
+
 cat bootkube-controller.yaml |
   ./cp_yaml.py --group etcd --user etcd assets/tls/etcd-* /etc/ssl/etcd/ |
-  ./cp_yaml.py --group etcd --user etcd  assets/tls/etcd/* /etc/ssl/etcd/etcd/ | 
+  ./cp_yaml.py --group etcd --user etcd  assets/tls/etcd/* /etc/ssl/etcd/etcd/ |
   ./cp_yaml.py assets/auth/kubeconfig /etc/kubernetes/kubeconfig |
   ./cp_yaml.py --fullname `find assets/` /opt/bootkube/ |
   sed 's/^#/ /' > ../examples/ignition/bootkube-controller.yaml

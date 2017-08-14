@@ -5,7 +5,7 @@ systemd:
       enable: true
       contents: |
         [Unit]
-        Description=fix etcd perms, symlink..dunno why
+        Description=fix etcd perms. Probably can also do this by bumping ignition to 2.1
         Before=etcd-member.service
         [Service]
         Type=oneshot
@@ -14,6 +14,24 @@ systemd:
         ExecStart=/usr/bin/sleep 0
         [Install]
         RequiredBy=etcd-member.service
+    - name: dns.service
+      enable: true
+      contents: |
+        [Unit]
+        Description=Local dns service
+        Before=kubelet.service bootkube.service. Ignore stuff after fb-node1.example.com
+        [Service]
+        Type=simple
+        ExecStart=/usr/bin/rkt run --insecure-options=image --net=host /mnt/data/coreos/etcd.aci \
+          --caps-retain=CAP_NET_ADMIN,CAP_NET_BIND_SERVICE,CAP_SETGID,CAP_SETUID,CAP_NET_RAW \
+          -- -d \
+          --address=/fb-node1.example.com/198.18.94.6 \
+          --address=/matchbox.foo/172.17.0.2 \
+          --address=/quay.io/23.21.252.151 \
+          --address=/quay-registry.s3.amazonaws.com/54.231.40.99 \
+          --server=10.14.250.53
+        [Install]
+        RequiredBy=kubelet.service bootkube.service
     - name: etcd-member.service
       enable: true
       dropins:
@@ -21,7 +39,7 @@ systemd:
           contents: |
             [Service]
             Environment="ETCD_IMAGE_TAG="
-            Environment="ETCD_IMAGE=--insecure-options=image http://matchbox.foo:8080/assets/rkt/etcd.aci"
+            Environment="ETCD_IMAGE=--insecure-options=image /mnt/data/coreos/etcd.aci"
             Environment="ETCD_NAME={{.etcd_name}}"
             Environment="ETCD_ADVERTISE_CLIENT_URLS=https://{{.domain_name}}:2379"
             Environment="ETCD_INITIAL_ADVERTISE_PEER_URLS=https://{{.domain_name}}:2380"
@@ -130,12 +148,15 @@ systemd:
       contents: |
         [Unit]
         Description=Bootstrap a Kubernetes control plane with a temp api-server
+        After=dns.service
+        Wants=dns.service
         [Service]
         Type=simple
         WorkingDirectory=/opt/bootkube
-        ExecStart=/opt/bootkube/bootkube-start
+        ExecStart=/bin/sh -c "sleep 10 && /opt/bootkube/bootkube-start"
         [Install]
         WantedBy=multi-user.target
+
 storage:
 # {{ if index . "pxe" }}
   disks:
@@ -154,12 +175,37 @@ storage:
             - "-LROOT"
 # {{end}} 
   files:
+    - path: /etc/systemd/network/static.network
+      filesystem: root
+      mode: 0644
+      contents:
+        inline: |
+          [Match]
+          Name=bond0
+
+          [Network]
+          Address=198.18.94.6
+    - path: /etc/hosts
+      filesystem: root
+      mode: 0644
+      contents:
+        inline: |
+          127.0.0.1       localhost
+          ::1             localhost
+          23.21.252.151 quay.io
+          54.231.40.99 quay-registry.s3.amazonaws.com
+    - path: /etc/resolv.conf
+      filesystem: root
+      mode: 0644
+      contents:
+        inline: |
+          nameserver 127.0.0.1
     - path: /etc/kubernetes/kubelet.env
       filesystem: root
       mode: 0644
       contents:
         inline: |
-          KUBELET_IMAGE=http://matchbox.foo:8080/assets/rkt/hyperkube.aci
+          KUBELET_IMAGE=/mnt/data/coreos/hyperkube.aci
     - path: /etc/ssl/etcd/.empty
       filesystem: root
       mode: 0644
@@ -189,7 +235,7 @@ storage:
           #!/bin/bash
           # Wrapper for bootkube start
           set -e
-          BOOTKUBE_ACI="http://matchbox.foo:8080/assets/rkt/bootkube.aci"
+          BOOTKUBE_ACI="/mnt/data/coreos/bootkube.aci"
           BOOTKUBE_VERSION=""
           BOOTKUBE_ASSETS="${BOOTKUBE_ASSETS:-/opt/bootkube/assets}"
           exec /usr/bin/rkt run \
