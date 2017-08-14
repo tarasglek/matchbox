@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys
 """
-bootkube render --asset-dir=assets --api-servers=https://fb-node1.example.com:443 --api-server-alt-names=DNS=fb-node1.example.com --etcd-servers=https://fb-node1.example.com:2379
+bootkube render --asset-dir=assets --api-servers=https://controller:443 --api-server-alt-names=DNS=controller --etcd-servers=https://controller:2379
 
 cat bootkube-controller.yaml |
   ./cp_yaml.py --group etcd --user etcd assets/tls/etcd-* /etc/ssl/etcd/ |
