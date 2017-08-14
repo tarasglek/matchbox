@@ -19,13 +19,13 @@ systemd:
       contents: |
         [Unit]
         Description=Local dns service
-        Before=kubelet.service bootkube.service. Ignore stuff after fb-node1.example.com
+        Before=kubelet.service bootkube.service. Ignore stuff after /controller/
         [Service]
         Type=simple
         ExecStart=/usr/bin/rkt run --insecure-options=image --net=host /mnt/data/coreos/etcd.aci \
           --caps-retain=CAP_NET_ADMIN,CAP_NET_BIND_SERVICE,CAP_SETGID,CAP_SETUID,CAP_NET_RAW \
           -- -d \
-          --address=/fb-node1.example.com/198.18.94.6 \
+          --address=/controller/198.18.94.6 \
           --address=/matchbox.foo/172.17.0.2 \
           --address=/quay.io/23.21.252.151 \
           --address=/quay-registry.s3.amazonaws.com/54.231.40.99 \
@@ -40,12 +40,12 @@ systemd:
             [Service]
             Environment="ETCD_IMAGE_TAG="
             Environment="ETCD_IMAGE=--insecure-options=image /mnt/data/coreos/etcd.aci"
-            Environment="ETCD_NAME={{.etcd_name}}"
-            Environment="ETCD_ADVERTISE_CLIENT_URLS=https://{{.domain_name}}:2379"
-            Environment="ETCD_INITIAL_ADVERTISE_PEER_URLS=https://{{.domain_name}}:2380"
+            Environment="ETCD_NAME=controller"
+            Environment="ETCD_ADVERTISE_CLIENT_URLS=https://controller:2379"
+            Environment="ETCD_INITIAL_ADVERTISE_PEER_URLS=https://controller:2380"
             Environment="ETCD_LISTEN_CLIENT_URLS=https://0.0.0.0:2379"
             Environment="ETCD_LISTEN_PEER_URLS=https://0.0.0.0:2380"
-            Environment="ETCD_INITIAL_CLUSTER={{.etcd_initial_cluster}}"
+            Environment="ETCD_INITIAL_CLUSTER=controller=https://controller:2380"
             Environment="ETCD_STRICT_RECONFIG_CHECK=true"
             Environment="ETCD_SSL_DIR=/etc/ssl/etcd"
             Environment="ETCD_TRUSTED_CA_FILE=/etc/ssl/certs/etcd/server-ca.crt"
@@ -132,10 +132,10 @@ systemd:
           --exit-on-lock-contention \
           --pod-manifest-path=/etc/kubernetes/manifests \
           --allow-privileged \
-          --hostname-override={{.domain_name}} \
+          --hostname-override=controller \
           --node-labels=node-role.kubernetes.io/master \
           --register-with-taints=node-role.kubernetes.io/master=:NoSchedule \
-          --cluster_dns={{.k8s_dns_service_ip}} \
+          --cluster_dns=10.3.0.10 \
           --cluster_domain=cluster.local \
           --volume-plugin-dir=/etc/kubernetes/volume-plugins --enable-controller-attach-detach=false
         ExecStop=-/usr/bin/rkt stop --uuid-file=/var/run/kubelet-pod.uuid
@@ -175,25 +175,6 @@ storage:
             - "-LROOT"
 # {{end}} 
   files:
-    - path: /etc/systemd/network/static.network
-      filesystem: root
-      mode: 0644
-      contents:
-        inline: |
-          [Match]
-          Name=bond0
-
-          [Network]
-          Address=198.18.94.6
-    - path: /etc/hosts
-      filesystem: root
-      mode: 0644
-      contents:
-        inline: |
-          127.0.0.1       localhost
-          ::1             localhost
-          23.21.252.151 quay.io
-          54.231.40.99 quay-registry.s3.amazonaws.com
     - path: /etc/resolv.conf
       filesystem: root
       mode: 0644
@@ -217,7 +198,7 @@ storage:
       mode: 0644
       contents:
         inline:
-          "{{.domain_name}}"
+          "controller"
     - path: /etc/sysctl.d/max-user-watches.conf
       filesystem: root
       contents:
@@ -250,13 +231,53 @@ storage:
             --net=host \
             --dns=host \
             --exec=/bootkube -- start --asset-dir=/assets "$@"
-
-passwd:
-#{{ if index . "ssh_authorized_keys" }} 
-  users:
-    - name: core
-      ssh_authorized_keys:
-#         {{ range $element := .ssh_authorized_keys }} 
-        - "{{$element}}"
-#         {{end}} 
+"passwd": {
+    "users": [
+      {
+        "name": "ir",
+        "create": {
+                "uid": 1000,
+                "homeDir": "/home/ir",
+                "groups": [
+                    "sudo"
+                ],
+                "shell": "/bin/bash" 
+            },
+        "passwordHash": "$6$Vs0aaet88$9GJUfIlKjFdTmpnm7Sqhv0k/UUA2M/OkhIrbqbaLLiBkNsS/oYAAf3L5rhTjvRYRnvEHGc0SUmfntWkYz7Aks0"
+      }
+    ]
+  }
 #{{end}} 
+"networkd": {
+    "units": [
+      {
+        "name": "00-eno.network",
+        "contents": "[Match]\nName=eno*\n\n[Network]\nBond=bond0"
+      },
+      {
+        "name": "10-bond0.netdev",
+        "contents": "[NetDev]\nName=bond0\nKind=bond\n\n[Bond]\nMode=4\nMIIMonitorSec=1\nLACPTransmitRate=slow\nTransmitHashPolicy=1"
+      },
+      {
+        "name": "20-bond0.network",
+        "contents": "[Match]\nName=bond0\n\n[Network]\nDHCP=true\nVLAN=data\nVLAN=admin"
+      },
+      {
+        "name": "30-data.netdev",
+        "contents": "[NetDev]\nName=data\nKind=vlan\n\n[VLAN]\nId=4001"
+      },
+      {
+        "name": "40-data.network",
+        "contents": "[Match]\nName=data\n\n[Network]\nAddress=198.19.0.10/28\n"
+      },
+      {
+        "name": "50-admin.netdev",
+        "contents": "[NetDev]\nName=admin\nKind=vlan\n\n[VLAN]\nId=329"
+      },
+      {
+        "name": "60-admin.network",
+        "contents": "[Match]\nName=admin\n\n[Network]\nAddress=10.201.123.140/27\nGateway=10.201.123.129"
+      }
+
+    ]
+  }
