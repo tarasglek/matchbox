@@ -1,13 +1,16 @@
 #!/usr/bin/env python
 import sys
 """
+bootkube render --asset-dir=assets --api-servers=https://node1.example.com:443 --api-server-alt-names=DNS=node1.example.com --etcd-servers=https://node1.example.com:2379
 cat bootkube-controller.yaml |
   ./cp_yaml.py --group etcd --user etcd assets/tls/etcd-* /etc/ssl/etcd/ |
   ./cp_yaml.py --group etcd --user etcd  assets/tls/etcd/* /etc/ssl/etcd/etcd/ | 
   ./cp_yaml.py assets/auth/kubeconfig /etc/kubernetes/kubeconfig |
   ./cp_yaml.py --fullname `find assets/` /opt/bootkube/ |
   sed 's/^#/ /' > ../examples/ignition/bootkube-controller.yaml
-cat bootkube-worker.yaml | ./cp_yaml.py assets/auth/kubeconfig /etc/kubernetes/kubeconfig|sed 's/^#/ /' > ../examples/ignition/bootkube-worker.yaml
+cat bootkube-worker.yaml |
+ ./cp_yaml.py assets/auth/kubeconfig /etc/kubernetes/kubeconfig |
+ sed 's/^#/ /' > ../examples/ignition/bootkube-worker.yaml
 """
 import os
 import os.path
