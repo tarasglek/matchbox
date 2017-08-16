@@ -2,11 +2,14 @@
 import sys
 """
 bootkube render --asset-dir=assets --api-servers=https://node1.example.com:443 --api-server-alt-names=DNS=node1.example.com --etcd-servers=https://node1.example.com:2379
+~/k8s-services/create_secret.py kubeconfig:assets/auth/kubeconfig config.json:config.json pure-config.yaml
+
 cat bootkube-controller.yaml |
   ./cp_yaml.py --group etcd --user etcd assets/tls/etcd-* /etc/ssl/etcd/ |
   ./cp_yaml.py --group etcd --user etcd  assets/tls/etcd/* /etc/ssl/etcd/etcd/ | 
   ./cp_yaml.py assets/auth/kubeconfig /etc/kubernetes/kubeconfig |
   ./cp_yaml.py --fullname `find assets/` /opt/bootkube/ |
+  ./cp_yaml.py pure-config.yaml /etc/kubernetes/pure-config.yaml |
   sed 's/^#/ /' > ../examples/ignition/bootkube-controller.yaml
 cat bootkube-worker.yaml |
  ./cp_yaml.py assets/auth/kubeconfig /etc/kubernetes/kubeconfig |

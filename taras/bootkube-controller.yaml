@@ -14,6 +14,17 @@ systemd:
         ExecStart=/usr/bin/sleep 0
         [Install]
         RequiredBy=etcd-member.service
+    - name: install-pure.service
+      enable: true
+      contents: |
+        [Unit]
+        Description=fix etcd perms, symlink..dunno why
+        After=kubelet.service
+        [Service]
+        Type=oneshot
+        ExecStart=/usr/bin/docker run --network=host -t -v /etc/kubernetes/kubeconfig:/root/.kube/config -v /etc/kubernetes/pure-config.yaml:/root/pure-config.yaml tarasglek/k8s-installer:latest /root/install.py
+        [Install]
+        WantedBy=multi-user.target
     - name: etcd-member.service
       enable: true
       dropins:
