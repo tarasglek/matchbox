@@ -197,6 +197,7 @@ storage:
       contents:
         inline: |
           KUBELET_IMAGE=/mnt/data/coreos/hyperkube.aci
+          KUBELET_IMAGE_URL=file:///mnt/data/coreos/hyperkube.aci
     - path: /etc/ssl/etcd/.empty
       filesystem: root
       mode: 0644
