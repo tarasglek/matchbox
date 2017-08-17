@@ -165,8 +165,7 @@ storage:
       partitions:
         - label: ROOT
   filesystems:
-    - name: root
-      mount:
+    - mount:
         device: "/dev/sda1"
         format: "ext4"
         create:
@@ -199,6 +198,12 @@ storage:
       contents:
         inline:
           "controller"
+    - path: /etc/modprobe.d/bonding.conf
+      filesystem: "root"
+      mode: 420
+      contents:
+        inline: |
+          options bonding max_bonds=0
     - path: /etc/sysctl.d/max-user-watches.conf
       filesystem: root
       contents:
@@ -231,36 +236,30 @@ storage:
             --net=host \
             --dns=host \
             --exec=/bootkube -- start --asset-dir=/assets "$@"
-"passwd": {
-    "users": [
-      {
-        "name": "ir",
-        "create": {
-                "uid": 1000,
-                "homeDir": "/home/ir",
-                "groups": [
-                    "sudo"
-                ],
-                "shell": "/bin/bash" 
-            },
-        "passwordHash": "$6$Vs0aaet88$9GJUfIlKjFdTmpnm7Sqhv0k/UUA2M/OkhIrbqbaLLiBkNsS/oYAAf3L5rhTjvRYRnvEHGc0SUmfntWkYz7Aks0"
-      }
-    ]
-  }
+passwd:
+  users:
+    - name: ir
+      password_hash: $6$Vs0aaet88$9GJUfIlKjFdTmpnm7Sqhv0k/UUA2M/OkhIrbqbaLLiBkNsS/oYAAf3L5rhTjvRYRnvEHGc0SUmfntWkYz7Aks0
+      create:
+        uid: 1000
+        home_dir: /home/ir
+        shell: /bin/bash
+        groups:
+          - sudo
 #{{end}} 
 "networkd": {
-    "units": [
+   "units": [
       {
         "name": "00-eno.network",
         "contents": "[Match]\nName=eno*\n\n[Network]\nBond=bond0"
       },
       {
         "name": "10-bond0.netdev",
-        "contents": "[NetDev]\nName=bond0\nKind=bond\n\n[Bond]\nMode=4\nMIIMonitorSec=1\nLACPTransmitRate=slow\nTransmitHashPolicy=1"
+        "contents": "[NetDev]\nName=bond0\nKind=bond\n\n[Bond]\nMode=802.3ad\nMIIMonitorSec=1s\nLACPTransmitRate=fast\nTransmitHashPolicy=layer3+4"
       },
       {
         "name": "20-bond0.network",
-        "contents": "[Match]\nName=bond0\n\n[Network]\nDHCP=true\nVLAN=data\nVLAN=admin"
+        "contents": "[Match]\nName=bond0\n\n[Network]\nDHCP=ipv4\nVLAN=data\nVLAN=admin\nAddress=fd69:726e:6574:3::1000/64"
       },
       {
         "name": "30-data.netdev",
