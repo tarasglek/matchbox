@@ -190,7 +190,7 @@ storage:
       mode: 0644
       contents:
         inline: |
-          nameserver 127.0.0.1
+          nameserver 198.18.94.6
     - path: /etc/kubernetes/kubelet.env
       filesystem: root
       mode: 0644
@@ -271,7 +271,7 @@ passwd:
       },
       {
         "name": "20-bond0.network",
-        "contents": "[Match]\nName=bond0\n\n[Network]\nDHCP=ipv4\nVLAN=data\nVLAN=admin\nAddress=fd69:726e:6574:3::1000/64"
+        "contents": "[Match]\nName=bond0\n\n[Network]\nDHCP=no\nVLAN=data\nVLAN=admin\nAddress=fd69:726e:6574:3::1000/64\nAddress=198.18.94.1/19"
       },
       {
         "name": "30-data.netdev",
