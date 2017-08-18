@@ -202,8 +202,14 @@ storage:
         inline: |
           127.0.0.1 localhost
     - path: /etc/modprobe.d/bonding.conf
-      filesystem: "root"
+      filesystem: root
       mode: 0444
+      contents:
+        inline: |
+          options bonding max_bonds=0
+    - path: /etc/modprobe.d/bonding.conf
+      filesystem: "root"
+      mode: 420
       contents:
         inline: |
           options bonding max_bonds=0
@@ -249,36 +255,65 @@ passwd:
         shell: /bin/bash
         groups:
           - sudo
-"networkd": {
-   "units": [
-      {
-        "name": "00-eno.network",
-        "contents": "[Match]\nName=eno*\n\n[Network]\nBond=bond0"
-      },
-      {
-        "name": "10-bond0.netdev",
-        "contents": "[NetDev]\nName=bond0\nKind=bond\n\n[Bond]\nMode=802.3ad\nMIIMonitorSec=1s\nLACPTransmitRate=fast\nTransmitHashPolicy=layer3+4"
-      },
-      {
-        "name": "20-bond0.network",
-        "contents": "[Match]\nName=bond0\n\n[Network]\nDHCP=no\nVLAN=data\nVLAN=admin\nAddress=fd69:726e:6574:3::1000/64\nAddress=198.18.94.1/19"
-      },
-      {
-        "name": "30-data.netdev",
-        "contents": "[NetDev]\nName=data\nKind=vlan\n\n[VLAN]\nId=4001"
-      },
-      {
-        "name": "40-data.network",
-        "contents": "[Match]\nName=data\n\n[Network]\nAddress=198.19.0.10/28\n"
-      },
-      {
-        "name": "50-admin.netdev",
-        "contents": "[NetDev]\nName=admin\nKind=vlan\n\n[VLAN]\nId=329"
-      },
-      {
-        "name": "60-admin.network",
-        "contents": "[Match]\nName=admin\n\n[Network]\nAddress=10.201.123.140/27\nGateway=10.201.123.129"
-      }
+networkd:
+  units:
+   - name: 00-eno.network
+     contents: |
+       [Match]
+       Name=eno*
 
-    ]
-  }
+       [Network]
+       Bond=bond0
+   - name: 10-bond0.netdev
+     contents: |
+       [NetDev]
+       Name=bond0
+       Kind=bond
+
+       [Bond]
+       Mode=802.3ad
+       MIIMonitorSec=1s
+       LACPTransmitRate=fast
+       TransmitHashPolicy=layer3+4
+   - name: 20-bond0.network
+     contents: |
+       [Match]
+       Name=bond0
+
+       [Network]
+       DHCP=no
+       VLAN=data
+       VLAN=admin
+       Address=fd69:726e:6574:3::1000/64
+       Address=198.18.94.1/19
+   - name: 30-data.netdev
+     contents: |
+       [NetDev]
+       Name=data
+       Kind=vlan
+
+       [VLAN]
+       Id=4001
+   - name: 40-data.network
+     contents: |
+       [Match]
+       Name=data
+
+       [Network]
+       Address=198.19.0.10/28
+   - name: 50-admin.netdev
+     contents: |
+       [NetDev]
+       Name=admin
+       Kind=vlan
+
+       [VLAN]
+       Id=329
+   - name: 60-admin.network
+     contents: |
+       [Match]
+       Name=admin
+
+       [Network]
+       Address=10.201.123.140/27
+       Gateway=10.201.123.129
