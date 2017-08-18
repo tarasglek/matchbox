@@ -169,21 +169,6 @@ systemd:
         WantedBy=multi-user.target
 
 storage:
-# {{ if index . "pxe" }}
-  disks:
-    - device: /dev/sda
-      wipe_table: true
-      partitions:
-        - label: ROOT
-  filesystems:
-    - mount:
-        device: "/dev/sda1"
-        format: "ext4"
-        create:
-          force: true
-          options:
-            - "-LROOT"
-# {{end}} 
   files:
     - path: /etc/resolv.conf
       filesystem: root
@@ -210,9 +195,15 @@ storage:
       contents:
         inline:
           "controller"
+    - path: /etc/hosts
+      filesystem: root
+      mode: 0644
+      contents:
+        inline: |
+          127.0.0.1 localhost
     - path: /etc/modprobe.d/bonding.conf
       filesystem: "root"
-      mode: 420
+      mode: 0444
       contents:
         inline: |
           options bonding max_bonds=0
@@ -258,7 +249,6 @@ passwd:
         shell: /bin/bash
         groups:
           - sudo
-#{{end}} 
 "networkd": {
    "units": [
       {
