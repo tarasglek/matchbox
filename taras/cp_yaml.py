@@ -9,7 +9,8 @@ cat bootkube-controller.yaml |
   ./cp_yaml.py assets/auth/kubeconfig /etc/kubernetes/kubeconfig |
   ./cp_yaml.py --fullname `find assets/` /opt/bootkube/ |
   cat > ../examples/ignition/bootkube-controller.yaml
-cat bootkube-worker.yaml | ./cp_yaml.py assets/auth/kubeconfig /etc/kubernetes/kubeconfig|sed 's/^#/ /' > ../examples/ignition/bootkube-worker.yaml
+  
+cat bootkube-worker.yaml| python subst.py 2 | ./cp_yaml.py assets/auth/kubeconfig /etc/kubernetes/kubeconfig| cat > ../examples/ignition/bootkube-worker.yaml
 """
 import os
 import os.path

@@ -38,7 +38,8 @@ systemd:
           --caps-retain=CAP_NET_ADMIN,CAP_NET_BIND_SERVICE,CAP_SETGID,CAP_SETUID,CAP_NET_RAW \
           -- -d \
           --address=/controller/198.18.94.1 \
-          --address=/matchbox.foo/172.17.0.2 \
+          --address=/node2/198.18.94.10 \
+          --address=/node3/198.18.94.17 \
           --server=10.14.250.53
         [Install]
         RequiredBy=kubelet.service bootkube.service
@@ -175,7 +176,7 @@ storage:
       mode: 0644
       contents:
         inline: |
-          nameserver 198.18.94.1
+          nameserver TEMPLATE_NODE_BOND_IP
     - path: /etc/kubernetes/kubelet.env
       filesystem: root
       mode: 0644
@@ -194,7 +195,7 @@ storage:
       mode: 0644
       contents:
         inline:
-          "controller"
+          "TEMPLATE_NODE_HOSTNAME"
     - path: /etc/hosts
       filesystem: root
       mode: 0644
@@ -204,12 +205,6 @@ storage:
     - path: /etc/modprobe.d/bonding.conf
       filesystem: root
       mode: 0444
-      contents:
-        inline: |
-          options bonding max_bonds=0
-    - path: /etc/modprobe.d/bonding.conf
-      filesystem: "root"
-      mode: 420
       contents:
         inline: |
           options bonding max_bonds=0
@@ -284,8 +279,8 @@ networkd:
        DHCP=no
        VLAN=data
        VLAN=admin
-       Address=fd69:726e:6574:3::1000/64
-       Address=198.18.94.1/19
+       Address=TEMPLATE_NODE_IPV6/64
+       Address=TEMPLATE_NODE_BOND_IP/19
    - name: 30-data.netdev
      contents: |
        [NetDev]
@@ -293,14 +288,14 @@ networkd:
        Kind=vlan
 
        [VLAN]
-       Id=4001
+       Id=TEMPLATE_NODE_VLAN_ID
    - name: 40-data.network
      contents: |
        [Match]
        Name=data
 
        [Network]
-       Address=198.19.0.10/28
+       Address=TEMPLATE_NODE_DATA_IP/28
    - name: 50-admin.netdev
      contents: |
        [NetDev]
@@ -315,5 +310,5 @@ networkd:
        Name=admin
 
        [Network]
-       Address=10.201.123.140/27
+       Address=TEMPLATE_NODE_ADMIN_IP/27
        Gateway=10.201.123.129
