@@ -11,8 +11,9 @@ hostname: controller
 """
 
 IPs = ["198.18.94.1", "198.18.94.10", "198.18.94.17"]
+NFS_IPs = ["198.19.0.1", "198.19.0.17", "198.19.0.33"]
 DATA_IPs = ["198.19.0.10", "198.19.0.27", "198.19.0.43"]
-NAMEs = ["controller", "node2", "node3"]
+NAMEs = ["controller", "worker1", "worker2"]
 
 def main():
     assert(len(sys.argv) == 2)
@@ -24,7 +25,7 @@ def main():
     bond_ip = IPs[node_index]
     vlan_data = str(4000 + node_number)
     hostname = NAMEs[node_index]
-
+    nfs_server_ip = NFS_IPs[node_index]
     out = sys.stdin.read() 
     out = out.replace("TEMPLATE_NODE_IPV6", ipv6)
     out = out.replace("TEMPLATE_NODE_DATA_IP", ipv4_data)
@@ -32,6 +33,7 @@ def main():
     out = out.replace("TEMPLATE_NODE_BOND_IP", bond_ip)
     out = out.replace("TEMPLATE_NODE_VLAN_ID", vlan_data)
     out = out.replace("TEMPLATE_NODE_HOSTNAME", hostname)
+    out = out.replace("TEMPLATE_NODE_NFS_SERVER", nfs_server_ip)
     sys.stdout.write(out)
 
 main()

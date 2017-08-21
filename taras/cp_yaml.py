@@ -11,6 +11,8 @@ cat bootkube-controller.yaml |
   cat > ../examples/ignition/bootkube-controller.yaml
   
 cat bootkube-worker.yaml| python subst.py 2 | ./cp_yaml.py assets/auth/kubeconfig /etc/kubernetes/kubeconfig| cat > ../examples/ignition/bootkube-worker.yaml
+ct -in-file ../examples/ignition/bootkube-worker.yaml -pretty  -out-file  /tmp/node1.ign
+
 """
 import os
 import os.path

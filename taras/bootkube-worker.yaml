@@ -1,6 +1,48 @@
 ---
 systemd:
   units:
+    - name: mnt-data.mount
+      enable: true
+      contents: |
+        [Mount]
+        What=TEMPLATE_NODE_NFS_SERVER:/root
+        Where=/mnt/data/
+        Type=nfs
+        [Install]
+        WantedBy=multi-user.target
+        RequiredBy=etcd-member.service kubelet.service bootkube.service dns.service
+    - name: hacketcd.service
+      enable: true
+      contents: |
+        [Unit]
+        Description=fix etcd perms. Probably can also do this by bumping ignition to 2.1
+        Before=etcd-member.service
+        [Service]
+        Type=oneshot
+        ExecStartPre=/usr/bin/chown -Rv etcd:etcd /etc/ssl/etcd
+        ExecStartPre=/usr/bin/chmod -Rv 500 /etc/ssl/etcd/
+        ExecStart=/usr/bin/sleep 0
+        [Install]
+        RequiredBy=etcd-member.service
+    - name: dns.service
+      enable: true
+      contents: |
+        [Unit]
+        Description=Local dns service bootkube.service. Ignore stuff after /controller/
+        Before=kubelet.service
+        After=mnt-data.mount
+        Requires=mnt-data.mount
+        [Service]
+        Type=simple
+        ExecStart=/usr/bin/rkt run --insecure-options=image --net=host /mnt/data/coreos/dnsmasq.aci \
+          --caps-retain=CAP_NET_ADMIN,CAP_NET_BIND_SERVICE,CAP_SETGID,CAP_SETUID,CAP_NET_RAW \
+          -- -d \
+          --address=/controller/198.18.94.1 \
+          --address=/node2/198.18.94.10 \
+          --address=/node3/198.18.94.17 \
+          --server=10.14.250.53
+        [Install]
+        RequiredBy=kubelet.service  
     - name: iscsid.service
       enable: true
     - name: docker.service
@@ -29,6 +71,17 @@ systemd:
         ExecStart=/bin/sh -c 'while ! /usr/bin/grep '^[^#[:space:]]' /etc/resolv.conf > /dev/null; do sleep 1; done'
         [Install]
         RequiredBy=kubelet.service
+    - name: multipathd.service
+      enable: true
+      contents: |
+        [Unit]
+        Description=Multipath service
+        Before=kubelet.service
+        [Service]
+        ExecStartPre=/sbin/modprobe dm-multipath
+        ExecStart=/usr/sbin/multipathd -d -s
+        [Install]
+        RequiredBy=kubelet.service
     - name: kubelet.service
       contents: |
         [Unit]
@@ -46,7 +99,7 @@ systemd:
           --mount volume=iscsiadm,target=/usr/sbin/iscsiadm \
           --volume iscsietc,kind=host,source=/etc/iscsi \
           --mount volume=iscsietc,target=/etc/iscsi \
-          --insecure-options=image" #insecure to facilitate pulling from source without signature
+          --insecure-options=image"
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/manifests
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/cni/net.d
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/checkpoint-secrets
@@ -66,54 +119,31 @@ systemd:
           --exit-on-lock-contention \
           --pod-manifest-path=/etc/kubernetes/manifests \
           --allow-privileged \
-          --hostname-override={{.domain_name}} \
+          --hostname-override=TEMPLATE_NODE_HOSTNAME \
           --node-labels=node-role.kubernetes.io/node \
-          --cluster_dns={{.k8s_dns_service_ip}} \
+          --cluster_dns=10.3.0.10 \
           --cluster_domain=cluster.local \
           --volume-plugin-dir=/etc/kubernetes/volume-plugins --enable-controller-attach-detach=false
         ExecStop=-/usr/bin/rkt stop --uuid-file=/var/run/kubelet-pod.uuid
         Restart=always
-        RestartSec=5
+        RestartSec=10
         [Install]
-        Requires=iscsid.service
         WantedBy=multi-user.target
-    - name: multipathd.service
-      enable: true
-      contents: |
-        [Unit]
-        Description=Multipath service
-        Before=kubelet.service
-        [Service]
-        ExecStartPre=/sbin/modprobe dm-multipath
-        ExecStart=/usr/sbin/multipathd -d -s
-        [Install]
-        RequiredBy=kubelet.service
-
 storage:
-#  {{ if index . "pxe" }}
-  disks:
-    - device: /dev/sda
-      wipe_table: true
-      partitions:
-        - label: ROOT
-  filesystems:
-    - name: root
-      mount:
-        device: "/dev/sda1"
-        format: "ext4"
-        create:
-          force: true
-          options:
-            - "-LROOT"
-#  {{end}}
   files:
+    - path: /etc/resolv.conf
+      filesystem: root
+      mode: 0644
+      contents:
+        inline: |
+          nameserver TEMPLATE_NODE_BOND_IP
     - path: /etc/kubernetes/kubelet.env
       filesystem: root
       mode: 0644
       contents:
         inline: |
-          KUBELET_IMAGE=http://matchbox.foo:8080/assets/rkt/hyperkube.aci
-          KUBELET_IMAGE_TAG=
+          KUBELET_IMAGE=/mnt/data/coreos/hyperkube.aci
+          KUBELET_IMAGE_URL=file:///mnt/data/coreos/hyperkube.aci
     - path: /etc/ssl/etcd/.empty
       filesystem: root
       mode: 0644
@@ -125,19 +155,93 @@ storage:
       mode: 0644
       contents:
         inline:
-          "{{.domain_name}}"
+          "TEMPLATE_NODE_HOSTNAME"
+    - path: /etc/hosts
+      filesystem: root
+      mode: 0644
+      contents:
+        inline: |
+          127.0.0.1 localhost
+    - path: /etc/modprobe.d/bonding.conf
+      filesystem: root
+      mode: 0444
+      contents:
+        inline: |
+          options bonding max_bonds=0
     - path: /etc/sysctl.d/max-user-watches.conf
       filesystem: root
       contents:
         inline: |
           fs.inotify.max_user_watches=16184
-
 passwd:
-#{{ if index . "ssh_authorized_keys" }}
   users:
-    - name: core
-      ssh_authorized_keys:
-#        {{ range $element := .ssh_authorized_keys }}
-        - "{{$element}}"
-#        {{end}}
-#{{end}}
+    - name: ir
+      password_hash: $6$Vs0aaet88$9GJUfIlKjFdTmpnm7Sqhv0k/UUA2M/OkhIrbqbaLLiBkNsS/oYAAf3L5rhTjvRYRnvEHGc0SUmfntWkYz7Aks0
+      create:
+        uid: 1000
+        home_dir: /home/ir
+        shell: /bin/bash
+        groups:
+          - sudo
+networkd:
+  units:
+   - name: 00-eno.network
+     contents: |
+       [Match]
+       Name=eno*
+
+       [Network]
+       Bond=bond0
+   - name: 10-bond0.netdev
+     contents: |
+       [NetDev]
+       Name=bond0
+       Kind=bond
+
+       [Bond]
+       Mode=802.3ad
+       MIIMonitorSec=1s
+       LACPTransmitRate=fast
+       TransmitHashPolicy=layer3+4
+   - name: 20-bond0.network
+     contents: |
+       [Match]
+       Name=bond0
+
+       [Network]
+       DHCP=no
+       VLAN=data
+       VLAN=admin
+       Address=TEMPLATE_NODE_IPV6/64
+       Address=TEMPLATE_NODE_BOND_IP/19
+   - name: 30-data.netdev
+     contents: |
+       [NetDev]
+       Name=data
+       Kind=vlan
+
+       [VLAN]
+       Id=TEMPLATE_NODE_VLAN_ID
+   - name: 40-data.network
+     contents: |
+       [Match]
+       Name=data
+
+       [Network]
+       Address=TEMPLATE_NODE_DATA_IP/28
+   - name: 50-admin.netdev
+     contents: |
+       [NetDev]
+       Name=admin
+       Kind=vlan
+
+       [VLAN]
+       Id=329
+   - name: 60-admin.network
+     contents: |
+       [Match]
+       Name=admin
+
+       [Network]
+       Address=TEMPLATE_NODE_ADMIN_IP/27
+       Gateway=10.201.123.129
