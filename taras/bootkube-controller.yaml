@@ -18,7 +18,7 @@ systemd:
       enable: true
       contents: |
         [Unit]
-        Description=fix etcd perms, symlink..dunno why
+        Description=Install pure k8s personality
         After=kubelet.service
         [Service]
         Type=oneshot
