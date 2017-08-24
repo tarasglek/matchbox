@@ -34,8 +34,8 @@ systemd:
             Environment="ETCD_IMAGE_TAG="
             Environment="ETCD_IMAGE=--insecure-options=image http://matchbox.foo:8080/assets/rkt/etcd.aci"
             Environment="ETCD_NAME={{.etcd_name}}"
-            Environment="ETCD_ADVERTISE_CLIENT_URLS=https://{{.domain_name}}:2379"
-            Environment="ETCD_INITIAL_ADVERTISE_PEER_URLS=https://{{.domain_name}}:2380"
+            Environment="ETCD_ADVERTISE_CLIENT_URLS=https://%H:2379"
+            Environment="ETCD_INITIAL_ADVERTISE_PEER_URLS=https://%H:2380"
             Environment="ETCD_LISTEN_CLIENT_URLS=https://0.0.0.0:2379"
             Environment="ETCD_LISTEN_PEER_URLS=https://0.0.0.0:2380"
             Environment="ETCD_INITIAL_CLUSTER={{.etcd_initial_cluster}}"
@@ -125,7 +125,7 @@ systemd:
           --exit-on-lock-contention \
           --pod-manifest-path=/etc/kubernetes/manifests \
           --allow-privileged \
-          --hostname-override={{.domain_name}} \
+          --hostname-override=%H \
           --node-labels=node-role.kubernetes.io/master \
           --register-with-taints=node-role.kubernetes.io/master=:NoSchedule \
           --cluster_dns={{.k8s_dns_service_ip}} \
@@ -149,20 +149,20 @@ systemd:
         WantedBy=multi-user.target
 storage:
 # {{ if index . "pxe" }}
-  disks:
-    - device: /dev/sda
-      wipe_table: true
-      partitions:
-        - label: ROOT
-  filesystems:
-    - name: root
-      mount:
-        device: "/dev/sda1"
-        format: "ext4"
-        create:
-          force: true
-          options:
-            - "-LROOT"
+# disks:
+# - device: /dev/sda
+#   wipe_table: true
+#   partitions:
+#   - label: ROOT
+# filesystems:
+# - name: root
+#   mount:
+#     device: /dev/sda1
+#     format: ext4
+#     create:
+#       force: true
+#       options:
+#       - -LROOT
 # {{end}} 
   files:
     - path: /etc/kubernetes/kubelet.env
