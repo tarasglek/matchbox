@@ -15,7 +15,7 @@ systemd:
         [Install]
         RequiredBy=etcd-member.service
     - name: install-pure.service
-      enable: true
+      enable: false
       contents: |
         [Unit]
         Description=Install pure k8s personality
