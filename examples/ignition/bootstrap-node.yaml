@@ -25,6 +25,7 @@ systemd:
           --mount volume=data,target=/var/lib/matchbox \
           --mount volume=example,target=/var/lib/matchbox/groups \
           --mount volume=config,target=/etc/matchbox \
+          --insecure-options=image \
           /home/core/matchbox/examples/assets/rkt/matchbox.aci
 
         [Install]
@@ -41,6 +42,7 @@ systemd:
           --trust-keys-from-https \
           --mount volume=config,target=/home/core/matchbox/contrib/dnsmasq/dnsmasq.conf \
           --volume config,kind=host,source=/etc/dnsmasq.conf \
+          --insecure-options=image \
           /home/core/matchbox/examples/assets/rkt/dnsmasq.aci \
           --caps-retain=CAP_NET_ADMIN,CAP_NET_BIND_SERVICE,CAP_SETGID,CAP_SETUID,CAP_NET_RAW \
           -- -d -q \
