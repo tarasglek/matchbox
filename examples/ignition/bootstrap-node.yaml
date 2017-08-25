@@ -40,7 +40,7 @@ systemd:
         ExecStart=/usr/bin/rkt run \
           --net=host \
           --trust-keys-from-https \
-          --volume config,kind=host,source=/home/core/matchbox/contrib/dnsmasq/dnsmasq.conf \
+          --volume config,kind=host,source=/home/core/matchbox/contrib/dnsmasq/docker0.conf \
           --mount volume=config,target=/etc/dnsmasq.conf \
           --insecure-options=image \
           /home/core/matchbox/examples/assets/rkt/dnsmasq.aci \
