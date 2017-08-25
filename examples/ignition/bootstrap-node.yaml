@@ -40,8 +40,8 @@ systemd:
         ExecStart=/usr/bin/rkt run \
           --net=host \
           --trust-keys-from-https \
-          --mount volume=config,target=/home/core/matchbox/contrib/dnsmasq/dnsmasq.conf \
-          --volume config,kind=host,source=/etc/dnsmasq.conf \
+          --volume config,kind=host,source=/home/core/matchbox/contrib/dnsmasq/dnsmasq.conf \
+          --mount volume=config,target=/etc/dnsmasq.conf \
           --insecure-options=image \
           /home/core/matchbox/examples/assets/rkt/dnsmasq.aci \
           --caps-retain=CAP_NET_ADMIN,CAP_NET_BIND_SERVICE,CAP_SETGID,CAP_SETUID,CAP_NET_RAW \
