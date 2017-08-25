@@ -1,0 +1,83 @@
+---
+#  ~/matchbox/contrib/dnsmasq $ sudo cp  docker0.conf /etc/dnsmasq.conf
+#   DATA_MOUNT="-v $PWD/examples:/var/lib/matchbox -v $DIR/../examples/groups/$EXAMPLE:/var/lib/matchbox/groups"
+
+systemd:
+  units:
+    - name: matchbox.service
+      enable: true
+      contents: |
+        [Unit]
+        Description=CoreOS matchbox Server
+        Documentation=https://github.com/coreos/matchbox
+
+        [Service]
+        Environment="MATCHBOX_ADDRESS=0.0.0.0:80"
+        ExecStartPre=/usr/bin/mkdir -p /etc/matchbox
+        ExecStartPre=/usr/bin/mkdir -p /var/lib/matchbox/assets
+        ExecStart=/usr/bin/rkt run \
+          --net=host \
+          --inherit-env \
+          --trust-keys-from-https \
+          --volume data,kind=host,source=/home/core/matchbox/examples \
+          --volume example,kind=host,source=/home/core/matchbox/examples/groups/bootkube \
+          --volume config,kind=host,source=/home/core/matchbox/examples/etc/matchbox \
+          --mount volume=data,target=/var/lib/matchbox \
+          --mount volume=example,target=/var/lib/matchbox/groups \
+          --mount volume=config,target=/etc/matchbox \
+          /home/core/matchbox/examples/assets/rkt/matchbox.aci
+
+        [Install]
+        WantedBy=multi-user.target
+    - name: dnsmasq.service
+      enable: true
+      contents: |
+        [Unit]
+        Description=dnsmasq
+
+        [Service]
+        ExecStart=/usr/bin/rkt run \
+          --net=host \
+          --trust-keys-from-https \
+          --mount volume=config,target=/home/core/matchbox/contrib/dnsmasq/dnsmasq.conf \
+          --volume config,kind=host,source=/etc/dnsmasq.conf \
+          /home/core/matchbox/examples/assets/rkt/dnsmasq.aci \
+          --caps-retain=CAP_NET_ADMIN,CAP_NET_BIND_SERVICE,CAP_SETGID,CAP_SETUID,CAP_NET_RAW \
+          -- -d -q \
+          --log-queries
+        [Install]
+        WantedBy=multi-user.target
+
+storage:
+#  {{ if index . "pxe" }}
+  disks:
+    - device: /dev/sda
+      wipe_table: true
+      partitions:
+        - label: ROOT
+  filesystems:
+    - name: root
+      mount:
+        device: "/dev/sda1"
+        format: "ext4"
+        create:
+          force: true
+          options:
+            - "-LROOT"
+#  {{end}}
+  files:
+    - path: /etc/hostname
+      filesystem: root
+      mode: 0644
+      contents:
+        inline:
+          "{{.domain_name}}"
+passwd:
+#{{ if index . "ssh_authorized_keys" }}
+  users:
+    - name: core
+      ssh_authorized_keys:
+#        {{ range $element := .ssh_authorized_keys }}
+        - "{{$element}}"
+#        {{end}}
+#{{end}}
