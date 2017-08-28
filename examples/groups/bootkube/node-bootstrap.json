@@ -1,13 +1,12 @@
 {
-  "id": "node4",
-  "name": "worker node",
+  "id": "bootstrap",
+  "name": "bootstrap node",
   "profile": "bootstrap-node",
   "selector": {
     "mac": "52:54:00:d7:99:c7"
   },
   "metadata": {
-    "domain_name": "node4.example.com",
-    "k8s_dns_service_ip": "10.3.0.10",
+    "domain_name": "bootstrap.example.com",
     "pxe": "true",
     "ssh_authorized_keys": [
       "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDFEdmMBIiBUD6aOrSYmiRB4YNYvaHn0fKys+xDl8W2xcWqEitpidjAsYHAGLTN5BacLLwyOoj0JFe/4KazuHGCSV9apjAG/64PzxEww6xXqISG9A1/1CjcRKS0IZob7JOzpfhAwBBsbx9P/NIRzpeAzJeDikYIXqpA6TpmX2InCeh4XexuQMdTpDHKuLMN2lkBMkC2u4MTNpgVRGo4/reT5DQezIv0rH+kO6cV2ePzUUdrGHnLpuOA+pS4zWHOrcxsUREC02n/dFH3N6D92KZ0ZR1Xd1RobXAA74cQJb6Ab7Iu9MeeiZS4h5eyIb641FXt+33N6W8vt/zi+KBR9pZ7 taras@r66a-34"
