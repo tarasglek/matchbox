@@ -41,7 +41,9 @@ systemd:
           --net=host \
           --trust-keys-from-https \
           --volume config,kind=host,source=/home/core/dnsmasq/bootstrap.conf \
+          --volume resolv,kind=host,source=/etc/resolv.conf \
           --mount volume=config,target=/etc/dnsmasq.conf \
+          --mount volume=resolv,target=/etc/resolv.conf \
           --insecure-options=image \
           /home/core/matchbox/examples/assets/rkt/dnsmasq.aci \
           --caps-retain=CAP_NET_ADMIN,CAP_NET_BIND_SERVICE,CAP_SETGID,CAP_SETUID,CAP_NET_RAW \
