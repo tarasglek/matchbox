@@ -32,7 +32,7 @@ systemd:
           contents: |
             [Service]
             Environment="ETCD_IMAGE_TAG="
-            Environment="ETCD_IMAGE=--insecure-options=image http://matchbox.foo:8080/assets/rkt/etcd.aci"
+            Environment="ETCD_IMAGE=--insecure-options=image http://bootstrap.example.com/assets/rkt/etcd.aci"
             Environment="ETCD_NAME={{.etcd_name}}"
             Environment="ETCD_ADVERTISE_CLIENT_URLS=https://%H:2379"
             Environment="ETCD_INITIAL_ADVERTISE_PEER_URLS=https://%H:2380"
@@ -170,7 +170,7 @@ storage:
       mode: 0644
       contents:
         inline: |
-          KUBELET_IMAGE=http://matchbox.foo:8080/assets/rkt/hyperkube.aci
+          KUBELET_IMAGE=http://bootstrap.example.com/assets/rkt/hyperkube.aci
     - path: /etc/ssl/etcd/.empty
       filesystem: root
       mode: 0644
@@ -200,7 +200,7 @@ storage:
           #!/bin/bash
           # Wrapper for bootkube start
           set -e
-          BOOTKUBE_ACI="http://matchbox.foo:8080/assets/rkt/bootkube.aci"
+          BOOTKUBE_ACI="http://bootstrap.example.com/assets/rkt/bootkube.aci"
           BOOTKUBE_VERSION=""
           BOOTKUBE_ASSETS="${BOOTKUBE_ASSETS:-/opt/bootkube/assets}"
           exec /usr/bin/rkt run \
