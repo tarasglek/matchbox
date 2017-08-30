@@ -1,17 +1,17 @@
 {
-  "id": "bootkube-controller",
-  "name": "bootkube Ready Controller",
+  "id": "append-controller",
+  "name": "Appends matchbox controller to simulate booting in cloud env",
   "boot": {
     "kernel": "/assets/coreos/1409.7.0/coreos_production_pxe.vmlinuz",
     "initrd": ["/assets/coreos/1409.7.0/coreos_production_pxe_image.cpio.gz"],
     "args": [
       "root=/dev/sda1",
-      "coreos.config.url=http://bootstrap.example.com/ignition?uuid=${uuid}&mac=${mac:hexhyp}&domain=${domain}&hostname=${hostname}&k8s=controller",
+      "coreos.config.url=http://bootstrap.example.com:8080/ignition?k8s=append-controller",
       "coreos.first_boot=yes",
       "console=tty0",
       "console=ttyS0",
       "coreos.autologin"
     ]
   },
-  "ignition_id": "bootkube-controller.yaml"
+  "ignition_id": "append-controller.yaml"
 }
