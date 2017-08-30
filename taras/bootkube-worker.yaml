@@ -1,6 +1,21 @@
 ---
 systemd:
   units:
+    - name: static-hostname.service
+      enable: true
+      contents: |
+        [Unit]
+        Description=set static dns to full dynamic dns
+        Before=etcd-member.service kubelet.service
+        After=network-online.target
+        Wants=network-online.target systemd-resolved.service
+        [Service]
+        Type=oneshot
+        RemainAfterExit=yes
+        ExecStartPre=/bin/sh -c "if [ ! -e /etc/hostname ]; then hostnamectl --static set-hostname `host \`hostnamectl --transient\`|sed 's/ .*//'`; systemctl daemon-reload; echo wrote /etc/hostname; fi"
+        ExecStart=/bin/sh -c 'grep -v localhost /etc/hostname || (rm /etc/hostname; echo failed to set hostname && exit 1)'
+        [Install]
+        RequiredBy=etcd-member.service kubelet.service
     - name: iscsid.service
       enable: true
     - name: docker.service

@@ -1,0 +1,5 @@
+{
+  "id": "nodeN",
+  "name": "Non-Controller Node",
+  "profile": "append-worker"
+}
