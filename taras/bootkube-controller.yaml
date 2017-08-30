@@ -1,19 +1,23 @@
 ---
 systemd:
   units:
-    - name: hacketcd.service
+    - name: fixups.service
       enable: true
       contents: |
         [Unit]
-        Description=fix etcd perms, symlink..dunno why
+        Description=fix etcd perms, set static dns to full dynamic dns
         Before=etcd-member.service
+        After=network-online.target
+        Wants=network-online.target systemd-resolved.service
         [Service]
         Type=oneshot
+        RemainAfterExit=yes
         ExecStartPre=/usr/bin/chown -Rv etcd:etcd /etc/ssl/etcd
         ExecStartPre=/usr/bin/chmod -Rv 500 /etc/ssl/etcd/
-        ExecStart=/usr/bin/sleep 0
+        ExecStartPre=/bin/sh -c "if [ ! -e /etc/hostname ]; then hostnamectl --static set-hostname `host \`hostnamectl --transient\`|sed 's/ .*//'`; systemctl daemon-reload; echo wrote /etc/hostname; fi"
+        ExecStart=/bin/sh -c 'grep -v localhost /etc/hostname || (rm /etc/hostname; echo failed to set hostname && exit 1)'
         [Install]
-        RequiredBy=etcd-member.service
+        RequiredBy=etcd-member.service kubelet.service
     - name: install-pure.service
       enable: false
       contents: |
@@ -106,6 +110,8 @@ systemd:
           --volume iscsietc,kind=host,source=/etc/iscsi \
           --mount volume=iscsietc,target=/etc/iscsi \
           --insecure-options=image"
+        ExecStartPre=/bin/sh -c 'echo H=%H;hostnamectl --static'
+        ExecStartPre=/bin/sh -c 'if [ "%H" == "localhost" ] ;then echo systemd hostname fail; exit 1;fi'
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/manifests
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/cni/net.d
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/checkpoint-secrets
