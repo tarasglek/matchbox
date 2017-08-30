@@ -43,8 +43,10 @@ systemd:
           --net=host \
           --trust-keys-from-https \
           --volume config,kind=host,source=/home/core/dnsmasq/bootstrap.conf \
+          --volume hosts,kind=host,source=/home/core/dnsmasq/hosts \
           --volume resolv,kind=host,source=/run/systemd/resolve/resolv.conf \
           --mount volume=config,target=/etc/dnsmasq.conf \
+          --mount volume=hosts,target=/etc/hosts \
           --mount volume=resolv,target=/etc/resolv.conf \
           --insecure-options=image \
           /home/core/matchbox/examples/assets/rkt/dnsmasq.aci \
