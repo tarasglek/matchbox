@@ -12,11 +12,8 @@ systemd:
         Documentation=https://github.com/coreos/matchbox
 
         [Service]
-        Environment="MATCHBOX_ADDRESS=0.0.0.0:80"
-        ExecStartPre=/usr/bin/mkdir -p /etc/matchbox
-        ExecStartPre=/usr/bin/mkdir -p /var/lib/matchbox/assets
+        Environment="MATCHBOX_ADDRESS=0.0.0.0:8080"
         ExecStart=/usr/bin/rkt run \
-          --net=host \
           --inherit-env \
           --trust-keys-from-https \
           --volume data,kind=host,source=/home/core/matchbox/examples \
@@ -26,12 +23,17 @@ systemd:
           --mount volume=example,target=/var/lib/matchbox/groups \
           --mount volume=config,target=/etc/matchbox \
           --insecure-options=image \
+          --port=port-8080:8080 \
+          --port=port-8080:80 \
           /home/core/matchbox/examples/assets/rkt/matchbox.aci
 
         [Install]
         WantedBy=multi-user.target
     - name: dnsmasq.service
       enable: true
+      # systemd-resolv gets dhcp dns server
+      # we point dnsmasq at it
+      # we point /etc/resolv at dnsmasq
       contents: |
         [Unit]
         Description=dnsmasq
@@ -41,7 +43,7 @@ systemd:
           --net=host \
           --trust-keys-from-https \
           --volume config,kind=host,source=/home/core/dnsmasq/bootstrap.conf \
-          --volume resolv,kind=host,source=/etc/resolv.conf \
+          --volume resolv,kind=host,source=/run/systemd/resolve/resolv.conf \
           --mount volume=config,target=/etc/dnsmasq.conf \
           --mount volume=resolv,target=/etc/resolv.conf \
           --insecure-options=image \
@@ -68,14 +70,13 @@ storage:
           force: true
           options:
             - "-LROOT"
-#  {{end}}
   files:
-    - path: /etc/hostname
+    - path: /etc/resolv.conf
       filesystem: root
-      mode: 0644
       contents:
-        inline:
-          "{{.domain_name}}"
+        inline: |
+          nameserver 127.0.0.1
+#  {{end}}
 passwd:
 #{{ if index . "ssh_authorized_keys" }}
   users:

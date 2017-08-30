@@ -120,12 +120,6 @@ storage:
       contents:
         inline: |
           empty
-    - path: /etc/hostname
-      filesystem: root
-      mode: 0644
-      contents:
-        inline:
-          "{{.domain_name}}"
     - path: /etc/sysctl.d/max-user-watches.conf
       filesystem: root
       contents:
