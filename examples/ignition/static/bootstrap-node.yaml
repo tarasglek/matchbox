@@ -1,7 +1,3 @@
----
-#  ~/matchbox/contrib/dnsmasq $ sudo cp  docker0.conf /etc/dnsmasq.conf
-#   DATA_MOUNT="-v $PWD/examples:/var/lib/matchbox -v $DIR/../examples/groups/$EXAMPLE:/var/lib/matchbox/groups"
-
 systemd:
   units:
     - name: matchbox.service
@@ -57,34 +53,14 @@ systemd:
         WantedBy=multi-user.target
 
 storage:
-#  {{ if index . "pxe" }}
-  disks:
-    - device: /dev/sda
-      wipe_table: true
-      partitions:
-        - label: ROOT
-  filesystems:
-    - name: root
-      mount:
-        device: "/dev/sda1"
-        format: "ext4"
-        create:
-          force: true
-          options:
-            - "-LROOT"
   files:
     - path: /etc/resolv.conf
       filesystem: root
       contents:
         inline: |
           nameserver 127.0.0.1
-#  {{end}}
 passwd:
-#{{ if index . "ssh_authorized_keys" }}
   users:
     - name: core
       ssh_authorized_keys:
-#        {{ range $element := .ssh_authorized_keys }}
-        - "{{$element}}"
-#        {{end}}
-#{{end}}
+        - "ssh-rsa goes here"
