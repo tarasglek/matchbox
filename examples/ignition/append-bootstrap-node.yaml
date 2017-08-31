@@ -3,7 +3,6 @@ ignition:
     append:
        - source: http://my.docker.dnsmasq:8080/assets/ign/static/bootstrap-node.ign
 storage:
-#  {{ if index . "pxe" }}
   disks:
     - device: /dev/sda
       wipe_table: true
