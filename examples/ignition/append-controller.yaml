@@ -2,6 +2,6 @@ ignition:
   version: 2.0.0
   config:
     append:
-       - source: http://bootstrap.example.com:8080/ignition?k8s=controller
+       - source: http://172.17.0.254:8080/ignition?k8s=controller
 # controller class node
-       - source: http://bootstrap.example.com:8081/controller
+       - source: http://172.17.0.254:8081/controller

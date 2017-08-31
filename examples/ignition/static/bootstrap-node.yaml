@@ -60,7 +60,7 @@ systemd:
 
         [Service]
         ExecStartPre=/usr/bin/touch /etc/hosts.dns
-        ExecStart=docker run --rm -ti -v /etc/hosts.dns:/etc/hosts \
+        ExecStart=/usr/bin/docker run --rm -v /etc/hosts.dns:/etc/hosts \
           -v  /home/core/matchbox/taras/ignition_dns/ignition_dns.js:/ignition_dns.js \
           --name ignition_dns \
           --network=host \
