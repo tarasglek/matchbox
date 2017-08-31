@@ -13,5 +13,5 @@
       "coreos.autologin"
     ]
   },
-  "ignition_id": "bootstrap-node.yaml"
+  "ignition_id": "append-bootstrap-node.yaml"
 }
