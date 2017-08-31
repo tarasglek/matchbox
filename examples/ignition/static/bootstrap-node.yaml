@@ -35,11 +35,12 @@ systemd:
         Description=dnsmasq
 
         [Service]
+        ExecStartPre=/usr/bin/touch /etc/hosts.dns
         ExecStart=/usr/bin/rkt run \
           --net=host \
           --trust-keys-from-https \
           --volume config,kind=host,source=/home/core/dnsmasq/bootstrap.conf \
-          --volume hosts,kind=host,source=/home/core/dnsmasq/hosts \
+          --volume hosts,kind=host,source=/etc/hosts.dns \
           --volume resolv,kind=host,source=/run/systemd/resolve/resolv.conf \
           --mount volume=config,target=/etc/dnsmasq.conf \
           --mount volume=hosts,target=/etc/hosts \
@@ -49,6 +50,22 @@ systemd:
           --caps-retain=CAP_NET_ADMIN,CAP_NET_BIND_SERVICE,CAP_SETGID,CAP_SETUID,CAP_NET_RAW \
           -- -d -q \
           --log-queries
+        [Install]
+        WantedBy=multi-user.target
+    - name: dns-helper.service
+      enable: true
+      contents: |
+        [Unit]
+        Description=Serves hostnames, adds them to dns
+
+        [Service]
+        ExecStartPre=/usr/bin/touch /etc/hosts.dns
+        ExecStart=docker run --rm -ti -v /etc/hosts.dns:/etc/hosts \
+          -v  /home/core/matchbox/taras/ignition_dns/ignition_dns.js:/ignition_dns.js \
+          --name ignition_dns \
+          --network=host \
+          node:8.4-alpine \
+          node ignition_dns.js bootstrap example.com  /etc/hosts 8081
         [Install]
         WantedBy=multi-user.target
 

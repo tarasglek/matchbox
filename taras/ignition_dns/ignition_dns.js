@@ -1,5 +1,5 @@
 /*
-docker run --rm -ti -v `pwd`/dns_hosts:/etc/hosts -v  `pwd`/ignition_dns.js:/ignition_dns.js --name ignition_dns --network=host  node:8.4-alpine node ignition_dns.js /etc/hosts
+docker run --rm -ti -v `pwd`/dns_hosts:/etc/hosts -v  `pwd`/ignition_dns.js:/ignition_dns.js --name ignition_dns --network=host  node:8.4-alpine node ignition_dns.js /etc/hosts 8081
 docker kill ignition_dns ; docker rm ignition_dns
 docker run --rm -ti -v `pwd`/node_modules:/node_modules -v `pwd`/package.json:/package.json -v  `pwd`/ignition_dns.js:/ignition_dns.js --name ignition_dns --network=host  node:8.4-alpine yarn add ip
 */
