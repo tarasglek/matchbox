@@ -52,6 +52,7 @@ systemd:
           --log-queries
         [Install]
         WantedBy=multi-user.target
+        RequiredBy=dns-helper.service
     - name: dns-helper.service
       enable: true
       contents: |

@@ -6,7 +6,7 @@
     "initrd": ["/assets/coreos/1409.7.0/coreos_production_pxe_image.cpio.gz"],
     "args": [
       "root=/dev/sda1",
-      "coreos.config.url=http://bootstrap.example.com/ignition?uuid=${uuid}&mac=${mac:hexhyp}&domain=${domain}&hostname=${hostname}&k8s=controller",
+      "coreos.config.url=http://my.docker.dnsmasq/ignition?uuid=${uuid}&mac=${mac:hexhyp}&domain=${domain}&hostname=${hostname}&k8s=controller",
       "coreos.first_boot=yes",
       "console=tty0",
       "console=ttyS0",
