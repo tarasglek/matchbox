@@ -1,5 +1,5 @@
 {
-  "id": "node1",
+  "id": "controller1",
   "name": "Controller Node",
   "profile": "append-controller",
   "selector": {

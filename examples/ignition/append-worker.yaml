@@ -1,4 +1,5 @@
 ignition:
   config:
     append:
-       - source: http://bootstrap.example.com:8080/ignition?k8s=worker
+       - source: http://172.17.0.254:8080/ignition?k8s=worker
+       - source: http://172.17.0.254:8081/worker

@@ -8,6 +8,8 @@ systemd:
         Documentation=https://github.com/coreos/matchbox
 
         [Service]
+        Restart=always
+        RestartSec=3
         Environment="MATCHBOX_ADDRESS=0.0.0.0:8080"
         ExecStart=/usr/bin/rkt run \
           --inherit-env \
@@ -35,7 +37,8 @@ systemd:
         Description=dnsmasq
 
         [Service]
-        ExecStartPre=/usr/bin/touch /etc/hosts.dns
+        Restart=always
+        RestartSec=3
         ExecStart=/usr/bin/rkt run \
           --net=host \
           --trust-keys-from-https \
@@ -52,19 +55,23 @@ systemd:
           --log-queries
         [Install]
         WantedBy=multi-user.target
-        RequiredBy=dns-helper.service
     - name: dns-helper.service
       enable: true
       contents: |
         [Unit]
         Description=Serves hostnames, adds them to dns
+        After=network-online.target dnsmasq.service
+        Wants=network-online.target
 
         [Service]
+        Restart=always
+        RestartSec=3
         ExecStartPre=/usr/bin/touch /etc/hosts.dns
         ExecStart=/usr/bin/docker run --rm -v /etc/hosts.dns:/etc/hosts \
           -v  /home/core/matchbox/taras/ignition_dns/ignition_dns.js:/ignition_dns.js \
           --name ignition_dns \
           --network=host \
+          --pid=host \
           node:8.4-alpine \
           node ignition_dns.js bootstrap example.com  /etc/hosts 8081
         [Install]
@@ -72,12 +79,9 @@ systemd:
 
 storage:
   files:
-    - path: /etc/resolv.conf
+    - path: /etc/hosts.dns
       filesystem: root
       mode: 0644
-      contents:
-        inline: |
-          nameserver 127.0.0.1
 passwd:
   users:
     - name: core

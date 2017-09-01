@@ -1,14 +1,14 @@
 {
-  "id": "node1",
+  "id": "controller1",
   "name": "Controller Node",
   "profile": "bootkube-controller",
   "selector": {
     "k8s": "controller"
   },
   "metadata": {
-    "domain_name": "node1.example.com",
-    "etcd_initial_cluster": "node1=https://node1.example.com:2380",
-    "etcd_name": "node1",
+    "domain_name": "controller1.example.com",
+    "etcd_initial_cluster": "controller1=https://controller1.example.com:2380",
+    "etcd_name": "controller1",
     "k8s_dns_service_ip": "10.3.0.10",
     "pxe": "true",
     "ssh_authorized_keys": [

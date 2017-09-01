@@ -6,12 +6,20 @@ docker run --rm -ti -v `pwd`/node_modules:/node_modules -v `pwd`/package.json:/p
 var http = require('http')
 var fs = require('fs')
 var os = require('os')
+var child_process = require('child_process')
 
-const IGNITION = `
+const IGNITION_OBJ =
 {
     "ignition": {
       "version": "2.0.0",
-      "config": {}
+      "config": {
+        "append": [
+            {
+              "source": "http://DNS_NAMESERVER:8080/ignition?k8s=NODE_TYPE",
+              "verification": {}
+            }
+        ]
+      }
     },
     "storage": {
       "files": [
@@ -42,7 +50,9 @@ const IGNITION = `
     "systemd": {},
     "networkd": {},
     "passwd": {}
-}`
+}
+
+const IGNITION = JSON.stringify(IGNITION_OBJ)
 
 function writeLine(fd, line) {
     fs.writeSync(fd, line + "\n")
@@ -77,25 +87,29 @@ function main() {
     http.createServer(function (req, res) {
         var reqip = req.connection.remoteAddress
         var client_hostname = null
+        var node_type = req.url.substring(1)
         if (reqip in nodes) {
             client_hostname = nodes[reqip]
         } else {
-            var counterName = req.url.substring(1)
-            if (!(counterName in counters)) {
-                counters[counterName] = 1
+            if (!(node_type in counters)) {
+                counters[node_type] = 1
             }
-            nodes[reqip] = client_hostname = counterName + counters[counterName]++
+            nodes[reqip] = client_hostname = node_type + counters[node_type]++
             writeLine(hosts_fd, reqip + " " + client_hostname)
         }
 
 
-        var str = IGNITION.replace(/DNS_NODE/g, client_hostname).replace(/DNS_DOMAIN/g, domain).replace(/DNS_NAMESERVER/g, my_ip)
+        var str = IGNITION.replace(/DNS_NODE/g, client_hostname).
+            replace(/DNS_DOMAIN/g, domain).
+            replace(/DNS_NAMESERVER/g, my_ip).
+            replace(/NODE_TYPE/g, node_type)
         res.writeHead(200, {
             'Content-Type': 'application/json',
             'Content-Length': str.length,
         })
         res.end(str)
-    }).listen(listen_port)
+        child_process.exec("pkill -HUP dnsmasq")
+    }).listen(listen_port, '0.0.0.0')
 
     console.error("Listening on port " + listen_port);
 }
