@@ -105,7 +105,6 @@ systemd:
         ExecStart=/usr/sbin/multipathd -d -s
         [Install]
         RequiredBy=kubelet.service
-
 storage:
   files:
     - path: /etc/kubernetes/kubelet.env
