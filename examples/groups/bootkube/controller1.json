@@ -4,5 +4,9 @@
   "profile": "append-controller",
   "selector": {
     "mac": "52:54:00:a1:9c:aa"
+  },
+  "metadata": {
+    "ip": "172.17.0.21",
+    "domain_name": "controller1.example.com"
   }
 }
