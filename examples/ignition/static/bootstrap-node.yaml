@@ -42,7 +42,7 @@ systemd:
         ExecStart=/usr/bin/rkt run \
           --net=host \
           --trust-keys-from-https \
-          --volume config,kind=host,source=/home/core/dnsmasq/bootstrap.conf \
+          --volume config,kind=host,source=/home/core/matchbox/contrib/dnsmasq/bootstrap.conf \
           --volume hosts,kind=host,source=/etc/hosts.dns \
           --volume resolv,kind=host,source=/run/systemd/resolve/resolv.conf \
           --mount volume=config,target=/etc/dnsmasq.conf \
