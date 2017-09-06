@@ -1,7 +1,7 @@
 {
   "id": "bootstrap",
   "name": "bootstrap node",
-  "profile": "bootstrap-node",
+  "profile": "node-bootstrap",
   "selector": {
     "mac": "52:54:00:d7:99:c7"
   },

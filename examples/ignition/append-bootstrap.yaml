@@ -1,7 +1,7 @@
 ignition:
   config:
     append:
-       - source: http://my.docker.dnsmasq:8080/assets/ign/static/bootstrap-node.ign
+       - source: http://my.docker.dnsmasq:8080/assets/ign/static/node-bootstrap.ign
 storage:
   disks:
     - device: /dev/sda
