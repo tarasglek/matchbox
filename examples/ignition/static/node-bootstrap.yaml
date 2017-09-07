@@ -24,7 +24,6 @@ systemd:
           --port=port-8080:8080 \
           --port=port-8080:80 \
           /home/core/matchbox/examples/assets/rkt/matchbox.aci
-
         [Install]
         WantedBy=multi-user.target
     - name: dnsmasq.service
@@ -35,7 +34,6 @@ systemd:
       contents: |
         [Unit]
         Description=dnsmasq
-
         [Service]
         Restart=always
         RestartSec=3
@@ -55,6 +53,12 @@ systemd:
           --log-queries
         [Install]
         WantedBy=multi-user.target
+        PathExists=/home/core/matchbox/taras/ignition_dns/ignition_dns.js
+        PathExists=/home/core/matchbox/examples/assets/docker/node_8.4-alpine.docker.tar
+        [Install]
+        [Install]
+        WantedBy=multi-user.target
+        RequiredBy=dns-helper.service
     - name: dns-helper.service
       enable: true
       contents: |
@@ -62,11 +66,14 @@ systemd:
         Description=Serves hostnames, adds them to dns
         After=network-online.target dnsmasq.service
         Wants=network-online.target
-
         [Service]
         Restart=always
         RestartSec=3
+        ExecStartPre=/usr/bin/ls -l \
+          /home/core/matchbox/examples/assets/docker/node_8.4-alpine.docker.tar \
+          /home/core/matchbox/taras/ignition_dns/ignition_dns.js
         ExecStartPre=/usr/bin/touch /etc/hosts.dns
+        ExecStartPre=/usr/bin/docker load --input /home/core/matchbox/examples/assets/docker/node_8.4-alpine.docker.tar
         ExecStart=/usr/bin/docker run --rm -v /etc/hosts.dns:/etc/hosts \
           -v  /home/core/matchbox/taras/ignition_dns/ignition_dns.js:/ignition_dns.js \
           --name ignition_dns \
@@ -76,7 +83,6 @@ systemd:
           node ignition_dns.js bootstrap example.com  /etc/hosts 8081
         [Install]
         WantedBy=multi-user.target
-
 storage:
   files:
     - path: /etc/hosts.dns
