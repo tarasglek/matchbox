@@ -1,7 +1,8 @@
 /*
-docker run --rm -ti -v `pwd`/dns_hosts:/etc/hosts -v  `pwd`/ignition_dns.js:/ignition_dns.js --name ignition_dns --network=host  node:8.4-alpine node ignition_dns.js /etc/hosts 8081
-docker kill ignition_dns ; docker rm ignition_dns
-docker run --rm -ti -v `pwd`/node_modules:/node_modules -v `pwd`/package.json:/package.json -v  `pwd`/ignition_dns.js:/ignition_dns.js --name ignition_dns --network=host  node:8.4-alpine yarn add ip
+This serves ignition pointing at own ip for dns, sets node hostname and adds it to dnsmasq
+docker run --rm -ti -v `pwd`/dns_hosts:/etc/hosts -v  `pwd`/dns-helper.js:/dns-helper.js --name dns-helper --network=host  node:8.4-alpine node dns-helper.js bootstrap example.com /etc/hosts 8081
+docker kill dns-helper ; docker rm dns-helper
+docker run --rm -ti -v `pwd`/node_modules:/node_modules -v `pwd`/package.json:/package.json -v  `pwd`/dns-helper.js:/dns-helper.js --name dns-helpper --network=host  node:8.4-alpine yarn add ip
 */
 var http = require('http')
 var fs = require('fs')
@@ -54,12 +55,6 @@ const IGNITION_OBJ =
 
 const IGNITION = JSON.stringify(IGNITION_OBJ)
 
-function writeLine(fd, line) {
-    fs.writeSync(fd, line + "\n")
-    fs.fsyncSync(fd)
-    console.log(line)
-}
-
 function get_default_route_interface() {
     const route = fs.readFileSync('/proc/net/route');
     var line = route.toString().split("\n")[1]
@@ -67,38 +62,72 @@ function get_default_route_interface() {
     return interface
 }
 
+function read_hosts(filename) {
+    var contents = null
+    try {
+        var contents = fs.readFileSync(filename).toString()
+    } catch(e) {
+        if (e.code == "ENOENT")
+            return {}
+        throw e
+    }
+    var hosts = {}
+    var ips = {}
+    contents.split("\n").forEach(line => {
+        var space_index = line.search(/\s+/)
+        // skip incomplete lines
+        if (space_index < 7) // less than minimum entry length, eg of '1.2.3.4'
+            return
+        var ip = line.substr(0, space_index)
+        var hostname = line.substr(space_index + 1).trimLeft()
+        hosts[ip] = hostname
+        ips[hostname] = ip
+        console.log(`${ip} ${hostname} added from ${filename}`)
+    })
+    return [hosts, ips]
+}
 function main() {
     if (process.argv.length != 6) {
-        console.error(`Usage ${process.argv[0]} <my_short_hostname> <my_domain> <hosts_file> <listen_port>`)
+        console.error(`Usage ${process.argv[0]} ${process.argv[1]} <my_short_hostname> <my_domain> <hosts_file> <listen_port>`)
         process.exit(1)
     }
     var arg = 2;
     var my_hostname = process.argv[arg++]
     var domain = process.argv[arg++]
-    var hosts_fd = fs.openSync(process.argv[arg++], 'w')
+    var hosts_filename = process.argv[arg++]
+    var [hosts, ips] = read_hosts(hosts_filename)
     var listen_port = process.argv[arg++] * 1
-
-    var counters = {}
     var my_ip = os.networkInterfaces()[get_default_route_interface()][0].address
-    var nodes = {}
-    nodes[my_hostname] = my_ip
-    writeLine(hosts_fd, my_ip + " " + my_hostname)
+
+    function flush() {
+        var str = ""
+        Object.entries(hosts).forEach(([ip, hostname]) => {
+            str += ip + " " + hostname + "\n"
+        })
+        fs.writeFileSync(hosts_filename, str)
+    }
+    function commitEntry(ip, hostname) {
+        hosts[ip] = hostname
+        ips[hostname] = ip
+        flush()
+    }
+    commitEntry(my_ip, my_hostname)
 
     http.createServer(function (req, res) {
         var reqip = req.connection.remoteAddress
         var client_hostname = null
         var node_type = req.url.substring(1)
-        if (reqip in nodes) {
-            client_hostname = nodes[reqip]
+        if (reqip in hosts) {
+            client_hostname = hosts[reqip]
         } else {
-            if (!(node_type in counters)) {
-                counters[node_type] = 1
-            }
-            nodes[reqip] = client_hostname = node_type + counters[node_type]++
-            writeLine(hosts_fd, reqip + " " + client_hostname)
+            var client_hostname = null
+            var counter = 1
+            do {
+                client_hostname = node_type + counter++
+            } while(client_hostname in ips)
+            commitEntry(reqip, client_hostname)
         }
-
-
+        console.log(`Response to ${reqip}: ${client_hostname}`)
         var str = IGNITION.replace(/DNS_NODE/g, client_hostname).
             replace(/DNS_DOMAIN/g, domain).
             replace(/DNS_NAMESERVER/g, my_ip).

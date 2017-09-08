@@ -71,16 +71,17 @@ systemd:
         RestartSec=3
         ExecStartPre=/usr/bin/ls -l \
           /home/core/matchbox/examples/assets/docker/node_8.4-alpine.docker.tar \
-          /home/core/matchbox/taras/ignition_dns/ignition_dns.js
+          /home/core/matchbox/taras/dns-helper/dns-helper.js
+        ExecStartPre=-/usr/bin/docker rm dns-helper
         ExecStartPre=/usr/bin/touch /etc/hosts.dns
         ExecStartPre=/usr/bin/docker load --input /home/core/matchbox/examples/assets/docker/node_8.4-alpine.docker.tar
         ExecStart=/usr/bin/docker run --rm -v /etc/hosts.dns:/etc/hosts \
-          -v  /home/core/matchbox/taras/ignition_dns/ignition_dns.js:/ignition_dns.js \
-          --name ignition_dns \
+          -v  /home/core/matchbox/taras/dns-helper/dns-helper.js:/dns-helper.js \
+          --name dns-helper \
           --network=host \
           --pid=host \
           node:8.4-alpine \
-          node ignition_dns.js bootstrap example.com  /etc/hosts 8081
+          node dns-helper.js bootstrap example.com /etc/hosts 8081
         [Install]
         WantedBy=multi-user.target
 storage:
