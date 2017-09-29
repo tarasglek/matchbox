@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import sys
 """
 bootkube render --asset-dir=assets --api-servers=https://node1.example.com:443 --api-server-alt-names=DNS=node1.example.com --etcd-servers=https://node1.example.com:2379
@@ -23,7 +23,7 @@ from ruamel import yaml
 
 def stat_mode(file_stat):
   # can't return fancy 0700 type octals because python yaml outputs them as strings
-  return file_stat.st_mode & 0777
+  return file_stat.st_mode & 0o777
   # return (oct(file_stat.st_mode & 0777))
 
 """
