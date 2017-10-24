@@ -18,17 +18,22 @@ systemd:
         ExecStart=/bin/sh -c 'grep -v localhost /etc/hostname || (rm /etc/hostname; echo failed to set hostname && exit 1)'
         [Install]
         RequiredBy=etcd-member.service kubelet.service
-    - name: install-pure.service
-      enable: false
+    - name: fake-syslog.service
+      enable: true
       contents: |
-        [Unit]
-        Description=Install pure k8s personality
-        After=kubelet.service
-        [Service]
-        Type=oneshot
-        ExecStart=/usr/bin/docker run --network=host -t -v /etc/kubernetes/kubeconfig:/root/.kube/config -v /etc/kubernetes/pure-config.yaml:/root/pure-config.yaml tarasglek/k8s-installer:latest /root/install.py
-        [Install]
-        WantedBy=multi-user.target
+      [Unit]
+      Description=syslog emulation
+      After=systemd-journald.service
+      Requires=systemd-journald.service
+
+      [Service]
+      ExecStart=/bin/sh -c "journalctl -f >> /var/log/syslog"
+      TimeoutStartSec=0
+      Restart=on-failure
+      RestartSec=5s
+
+      [Install]
+      WantedBy=multi-user.target
     - name: etcd-member.service
       enable: true
       dropins:

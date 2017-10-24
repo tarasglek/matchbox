@@ -22,6 +22,22 @@ systemd:
       enable: true
     - name: locksmithd.service
       mask: true
+    - name: fake-syslog.service
+      enable: true
+      contents: |
+      [Unit]
+      Description=syslog emulation
+      After=systemd-journald.service
+      Requires=systemd-journald.service
+
+      [Service]
+      ExecStart=/bin/sh -c "journalctl -f >> /var/log/syslog"
+      TimeoutStartSec=0
+      Restart=on-failure
+      RestartSec=5s
+
+      [Install]
+      WantedBy=multi-user.target
     - name: kubelet.path
       enable: true
       contents: |
