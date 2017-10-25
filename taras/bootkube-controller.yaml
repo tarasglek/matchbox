@@ -160,6 +160,20 @@ systemd:
         WantedBy=multi-user.target
 storage:
   files:
+    - path: /etc/logrotate.d/syslog
+      filesystem: root
+      mode: 0644
+      contents:
+        inline: |
+          compress
+
+          /var/log/syslog {
+              rotate 3
+              daily
+              postrotate
+                  systemctl restart fake-syslog
+              endscript
+          }
     - path: /etc/kubernetes/kubelet.env
       filesystem: root
       mode: 0644
