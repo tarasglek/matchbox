@@ -20,6 +20,8 @@ systemd:
       enable: true
     - name: docker.service
       enable: true
+    - name: rpc-statd.service
+      enable: true
     - name: locksmithd.service
       mask: true
     - name: fake-syslog.service
