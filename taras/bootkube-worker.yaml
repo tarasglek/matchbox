@@ -68,11 +68,13 @@ systemd:
         Description=Kubelet via Hyperkube ACI
         [Service]
         EnvironmentFile=/etc/kubernetes/kubelet.env
-        Environment="RKT_RUN_ARGS=--uuid-file-save=/var/run/kubelet-pod.uuid \
+        Environment="RKT_RUN_ARGS=--uuid-file-save=/var/cache/kubelet-pod.uuid \
           --volume=resolv,kind=host,source=/etc/resolv.conf \
           --mount volume=resolv,target=/etc/resolv.conf \
           --volume var-lib-cni,kind=host,source=/var/lib/cni \
           --mount volume=var-lib-cni,target=/var/lib/cni \
+          --volume opt-cni-bin,kind=host,source=/opt/cni/bin \
+          --mount volume=opt-cni-bin,target=/opt/cni/bin \
           --volume var-log,kind=host,source=/var/log \
           --mount volume=var-log,target=/var/log \
           --volume iscsiadm,kind=host,source=/usr/sbin/iscsiadm \
@@ -83,6 +85,7 @@ systemd:
         ExecStartPre=/bin/systemctl start rpc-statd
         ExecStartPre=/bin/sh -c 'echo H=%H;hostnamectl --static'
         ExecStartPre=/bin/sh -c 'if [ "%H" == "localhost" ] ;then echo systemd hostname fail; exit 1;fi'
+        ExecStartPre=/bin/mkdir -p /opt/cni/bin
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/manifests
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/cni/net.d
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/checkpoint-secrets
@@ -90,24 +93,24 @@ systemd:
         ExecStartPre=/bin/mkdir -p /var/lib/cni
         ExecStartPre=/bin/mkdir -p /etc/kubernetes/volume-plugins
         ExecStartPre=/usr/bin/bash -c "grep 'certificate-authority-data' /etc/kubernetes/kubeconfig | awk '{print $2}' | base64 -d > /etc/kubernetes/ca.crt"
-        ExecStartPre=-/usr/bin/rkt rm --uuid-file=/var/run/kubelet-pod.uuid
+        ExecStartPre=-/usr/bin/rkt rm --uuid-file=/var/cache/kubelet-pod.uuid
         ExecStart=/usr/lib/coreos/kubelet-wrapper \
-          --kubeconfig=/etc/kubernetes/kubeconfig \
-          --require-kubeconfig \
-          --client-ca-file=/etc/kubernetes/ca.crt \
-          --anonymous-auth=false \
-          --cni-conf-dir=/etc/kubernetes/cni/net.d \
-          --network-plugin=cni \
-          --lock-file=/var/run/lock/kubelet.lock \
-          --exit-on-lock-contention \
-          --pod-manifest-path=/etc/kubernetes/manifests \
           --allow-privileged \
-          --hostname-override=%H \
-          --node-labels=node-role.kubernetes.io/node \
+          --anonymous-auth=false \
+          --client-ca-file=/etc/kubernetes/ca.crt \
           --cluster_dns={{.k8s_dns_service_ip}} \
           --cluster_domain=cluster.local \
-          --volume-plugin-dir=/etc/kubernetes/volume-plugins --enable-controller-attach-detach=false
-        ExecStop=-/usr/bin/rkt stop --uuid-file=/var/run/kubelet-pod.uuid
+          --cni-conf-dir=/etc/kubernetes/cni/net.d \
+          --exit-on-lock-contention \
+          --hostname-override=%H \
+          --kubeconfig=/etc/kubernetes/kubeconfig \
+          --lock-file=/var/run/lock/kubelet.lock \
+          --network-plugin=cni \
+          --node-labels=node-role.kubernetes.io/node \
+          --volume-plugin-dir=/etc/kubernetes/volume-plugins --enable-controller-attach-detach=false \
+          --pod-manifest-path=/etc/kubernetes/manifests \
+          --require-kubeconfig
+        ExecStop=-/usr/bin/rkt stop --uuid-file=/var/cache/kubelet-pod.uuid
         Restart=always
         RestartSec=5
         [Install]
