@@ -223,7 +223,12 @@ storage:
             --net=host \
             --dns=host \
             --exec=/bootkube -- start --asset-dir=/assets "$@"
-
+      - path: /etc/exports
+        filesystem: root
+        mode: 0644
+        contents:
+          inline: |
+            /nfs *(rw,async,no_subtree_check,no_root_squash,fsid=0)
 passwd:
 #{{ if index . "ssh_authorized_keys" }} 
   users:
