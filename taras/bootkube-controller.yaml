@@ -1,6 +1,12 @@
 ---
 systemd:
   units:
+    # disable update service
+    # https://coreos.com/os/docs/latest/update-strategies.html#disable-automatic-updates-daemon
+    - name: update-engine.service
+      mask: true
+    - name: locksmithd.service
+      mask: true
     - name: fixups.service
       enable: true
       contents: |
@@ -231,11 +237,11 @@ storage:
         inline: |
           /persistentvolumes *(rw,async,no_subtree_check,no_root_squash,fsid=0)
 passwd:
-#{{ if index . "ssh_authorized_keys" }} 
+#{{ if index . "ssh_authorized_keys" }}
   users:
     - name: core
       ssh_authorized_keys:
-#         {{ range $element := .ssh_authorized_keys }} 
+#         {{ range $element := .ssh_authorized_keys }}
         - "{{$element}}"
-#         {{end}} 
-#{{end}} 
+#         {{end}}
+#{{end}}
