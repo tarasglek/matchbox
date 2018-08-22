@@ -230,6 +230,20 @@ storage:
             --net=host \
             --dns=host \
             --exec=/bootkube -- start --asset-dir=/assets "$@"
+    - path: /etc/docker/daemon.json
+      filesystem: root
+      mode: 0644
+      contents:
+        inline: |
+          {
+            "max-concurrent-downloads": 16,
+            "max-concurrent-uploads": 16,
+            "log-opts": {
+              "max-size": "10m",
+              "max-file": "3"
+            },
+            "live-restore": true
+          }
     - path: /etc/exports
       filesystem: root
       mode: 0644
