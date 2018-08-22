@@ -241,8 +241,7 @@ storage:
             "log-opts": {
               "max-size": "10m",
               "max-file": "3"
-            },
-            "live-restore": true
+            }
           }
     - path: /etc/exports
       filesystem: root

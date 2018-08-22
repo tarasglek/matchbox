@@ -178,8 +178,7 @@ storage:
             "log-opts": {
               "max-size": "10m",
               "max-file": "3"
-            },
-            "live-restore": true
+            }
           }
 passwd:
 #{{ if index . "ssh_authorized_keys" }}
