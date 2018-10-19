@@ -114,8 +114,7 @@ systemd:
           --network-plugin=cni \
           --node-labels=node-role.kubernetes.io/node \
           --volume-plugin-dir=/etc/kubernetes/volume-plugins --enable-controller-attach-detach=false \
-          --pod-manifest-path=/etc/kubernetes/manifests \
-          --require-kubeconfig
+          --pod-manifest-path=/etc/kubernetes/manifests
         ExecStop=-/usr/bin/rkt stop --uuid-file=/var/cache/kubelet-pod.uuid
         Restart=always
         RestartSec=5
